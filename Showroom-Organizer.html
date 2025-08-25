@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plot Organizer - Arxzez</title>
+    <title>Showroom Organizer - Arxzez</title>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
@@ -60,13 +60,13 @@
             margin-bottom: 1rem; 
             transition: all 0.3s ease;
         }
-        .form-panel { border: 2px solid #ef4444; }
+        .display-panel { border: 2px solid #ef4444; }
         .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; color: white; margin: 2px; }
         .btn-blue { background: #3b82f6; } .btn-blue:hover { background: #2563eb; }
         .btn-green { background: #10b981; } .btn-green:hover { background: #059669; }
         .btn-red { background: #ef4444; } .btn-red:hover { background: #dc2626; }
         .btn-purple { background: #8b5cf6; } .btn-purple:hover { background: #7c3aed; }
-        .spawn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .spawn-showroom { display: showroom; showroom-template-columns: 1fr 1fr; gap: 8px; }
         .spawn-item { position: relative; display: flex; align-items: center; }
         .spawn-btn { 
             flex-grow: 1;
@@ -91,13 +91,13 @@
             margin-left: 4px;
         }
         .delete-btn:hover { background-color: var(--bg-tertiary); }
-        .grid-and-controls { 
+        .showroom-and-controls { 
             display: flex;
             gap: 1rem;
             align-items: flex-start;
             flex: 1;
         }
-        .grid-container { 
+        .showroom-container { 
             border: 2px solid var(--border-primary); 
             overflow: auto; 
             background: var(--bg-secondary);
@@ -107,7 +107,7 @@
             padding: 1rem;
             position: relative; 
         }
-        .grid { 
+        .showroom { 
             position: relative; 
             user-select: none; 
             background-image: 
@@ -120,7 +120,7 @@
             border-right: 1px solid var(--border-primary);
             border-bottom: 1px solid var(--border-primary);
         }
-        .block { 
+        .display { 
             position: absolute; 
             border: 2px solid #1f2937; 
             border-radius: 4px; 
@@ -133,9 +133,9 @@
             cursor: grab; 
             touch-action: none;
         }
-        .block.selected { border: 4px solid var(--text-accent); z-index: 10; }
-        .block-text { text-align: center; }
-        .form-input { 
+        .display.selected { border: 4px solid var(--text-accent); z-index: 10; }
+        .display-text { text-align: center; }
+        .display-input { 
             width: 100%; 
             padding: 8px; 
             border: 1px solid var(--border-primary); 
@@ -143,15 +143,15 @@
             background: var(--bg-secondary);
             color: var(--text-primary);
         }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-        .type-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+        .display-row { display: showroom; showroom-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .type-showroom { 
+            display: showroom; 
+            showroom-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
             gap: 8px; 
         }
         .type-btn { padding: 8px; border-radius: 4px; cursor: pointer; text-align: center; font-size: 12px; font-weight: bold; color: white; }
-        .storage-block { 
-            display: inline-block; 
+        .storage-display { 
+            display: inline-display; 
             margin: 2px; 
             border: 1px solid #1f2937; 
             border-radius: 4px; 
@@ -163,7 +163,7 @@
             text-align: center;
             line-height: 30px;
         }
-        .storage-block:hover { opacity: 0.8; }
+        .storage-display:hover { opacity: 0.8; }
         .storage-area { min-height: 80px; border: 2px dashed var(--border-primary); border-radius: 8px; padding: 8px; background: var(--bg-tertiary); }
         .storage-area-highlight { border-color: #3b82f6 !important; background-color: #eff6ff !important; }
         .hidden { display: none; }
@@ -176,7 +176,7 @@
             flex-shrink: 0;
             width: 300px;
         }
-        .custom-form-panel {
+        .custom-display-panel {
             width: 300px;
         }
         .input-group {
@@ -200,7 +200,7 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transdisplay: translate(-50%, -50%);
             background: var(--bg-secondary);
             border: 2px solid var(--border-primary);
             border-radius: 8px;
@@ -256,13 +256,13 @@
         };
 
         const App = () => {
-            const [blocks, setBlocks] = useState([]);
-            const [storedBlocks, setStoredBlocks] = useState([]);
+            const [displays, setdisplays] = useState([]);
+            const [storeddisplays, setStoreddisplays] = useState([]);
             const [dragState, setDragState] = useState(null);
-            const [nextBlockId, setNextBlockId] = useState(0);
-            const [selectedBlockId, setSelectedBlockId] = useState(null);
+            const [nextdisplayId, setNextdisplayId] = useState(0);
+            const [selecteddisplayId, setSelecteddisplayId] = useState(null);
             const [isDarkMode, setIsDarkMode] = useState(false);
-            const [showCustomForms, setShowCustomForms] = useState(false);
+            const [showCustomDisplays, setShowCustomDisplays] = useState(false);
             const [customDisplay, setCustomDisplay] = useState({ name: '', width: 8, height: 8, types: [] });
             const [customType, setCustomType] = useState({ name: '', color: '#FF6B6B' });
             const [typeColors, setTypeColors] = useState(INITIAL_TYPE_COLORS);
@@ -272,14 +272,14 @@
             const [confirmCreateType, setConfirmCreateType] = useState(null);
             const [customDisplayWarning, setCustomDisplayWarning] = useState(null);
             const [noSpaceWarning, setNoSpaceWarning] = useState(null);
-            const [gridWidth, setGridWidth] = useState(INITIAL_GRID_SIZE);
-            const [gridHeight, setGridHeight] = useState(INITIAL_GRID_SIZE);
-            const [inputGridWidth, setInputGridWidth] = useState(INITIAL_GRID_SIZE);
-            const [inputGridHeight, setInputGridHeight] = useState(INITIAL_GRID_SIZE);
-            const [showGridSizeModal, setShowGridSizeModal] = useState(false);
+            const [showroomWidth, setShowroomWidth] = useState(INITIAL_GRID_SIZE);
+            const [showroomHeight, setShowroomHeight] = useState(INITIAL_GRID_SIZE);
+            const [inputShowroomWidth, setInputShowroomWidth] = useState(INITIAL_GRID_SIZE);
+            const [inputShowroomHeight, setInputShowroomHeight] = useState(INITIAL_GRID_SIZE);
+            const [showShowroomSizeModal, setShowShowroomSizeModal] = useState(false);
 
 
-            const gridRef = useRef(null);
+            const showroomRef = useRef(null);
             const startDragPos = useRef(null);
 
             useEffect(() => {
@@ -294,29 +294,29 @@
                 localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
             }, [isDarkMode]);
 
-            const getGridPosition = (clientX, clientY) => {
-                const rect = gridRef.current.getBoundingClientRect();
+            const getShowroomPosition = (clientX, clientY) => {
+                const rect = showroomRef.current.getBoundingClientRect();
                 const x = Math.floor((clientX - rect.left) / STUD_SIZE);
                 const y = Math.floor((clientY - rect.top) / STUD_SIZE);
-                return { x: Math.max(0, Math.min(x, gridWidth - 1)), y: Math.max(0, Math.min(y, gridHeight - 1)) };
+                return { x: Math.max(0, Math.min(x, showroomWidth - 1)), y: Math.max(0, Math.min(y, showroomHeight - 1)) };
             };
 
-            const checkCollision = (block1, block2) => {
-                const b1W = block1.rotation === 90 ? block1.height : block1.width;
-                const b1H = block1.rotation === 90 ? block1.width : block1.height;
-                const b2W = block2.rotation === 90 ? block2.height : block2.width;
-                const b2H = block2.rotation === 90 ? block2.width : block2.height;
-                return !(block1.x >= block2.x + b2W || block2.x >= block1.x + b1W || block1.y >= block2.y + b2H || block2.y >= block1.y + b1H);
+            const checkCollision = (display1, display2) => {
+                const b1W = display1.rotation === 90 ? display1.height : display1.width;
+                const b1H = display1.rotation === 90 ? display1.width : display1.height;
+                const b2W = display2.rotation === 90 ? display2.height : display2.width;
+                const b2H = display2.rotation === 90 ? display2.width : display2.height;
+                return !(display1.x >= display2.x + b2W || display2.x >= display1.x + b1W || display1.y >= display2.y + b2H || display2.y >= display1.y + b1H);
             };
 
-            const findFirstValidPositionOnGrid = (movingBlock, otherBlocks) => {
-                const width = movingBlock.rotation === 90 ? movingBlock.height : movingBlock.width;
-                const height = movingBlock.rotation === 90 ? movingBlock.width : movingBlock.height;
+            const findFirstValidPositionOnShowroom = (movingdisplay, otherdisplays) => {
+                const width = movingdisplay.rotation === 90 ? movingdisplay.height : movingdisplay.width;
+                const height = movingdisplay.rotation === 90 ? movingdisplay.width : movingdisplay.height;
                 
-                for (let y = 0; y <= gridHeight - height; y++) {
-                    for (let x = 0; x <= gridWidth - width; x++) {
-                        const tempBlock = { ...movingBlock, x, y };
-                        const hasCollision = otherBlocks.some(block => checkCollision(tempBlock, block));
+                for (let y = 0; y <= showroomHeight - height; y++) {
+                    for (let x = 0; x <= showroomWidth - width; x++) {
+                        const tempdisplay = { ...movingdisplay, x, y };
+                        const hasCollision = otherdisplays.some(display => checkCollision(tempdisplay, display));
                         if (!hasCollision) {
                             return { x, y };
                         }
@@ -325,13 +325,13 @@
                 return null;
             };
 
-            const findNearestValidPosition = (movingBlock, otherBlocks, startX, startY) => {
-                const width = movingBlock.rotation === 90 ? movingBlock.height : movingBlock.width;
-                const height = movingBlock.rotation === 90 ? movingBlock.width : movingBlock.height;
+            const findNearestValidPosition = (movingdisplay, otherdisplays, startX, startY) => {
+                const width = movingdisplay.rotation === 90 ? movingdisplay.height : movingdisplay.width;
+                const height = movingdisplay.rotation === 90 ? movingdisplay.width : movingdisplay.height;
                 
-                const tempBlock = { ...movingBlock, x: startX, y: startY };
-                if (startX >= 0 && startY >= 0 && startX + width <= gridWidth && startY + height <= gridHeight) {
-                    const hasCollision = otherBlocks.some(block => checkCollision(tempBlock, block));
+                const tempdisplay = { ...movingdisplay, x: startX, y: startY };
+                if (startX >= 0 && startY >= 0 && startX + width <= showroomWidth && startY + height <= showroomHeight) {
+                    const hasCollision = otherdisplays.some(display => checkCollision(tempdisplay, display));
                     if (!hasCollision) {
                         return { x: startX, y: startY };
                     }
@@ -342,16 +342,16 @@
                 let bestPosition = null;
             
                 for (const { dx, dy } of directions) {
-                    for (let i = 1; i < Math.max(gridWidth, gridHeight); i++) {
+                    for (let i = 1; i < Math.max(showroomWidth, showroomHeight); i++) {
                         const x = startX + i * dx;
                         const y = startY + i * dy;
             
-                        if (x < 0 || y < 0 || x + width > gridWidth || y + height > gridHeight) {
+                        if (x < 0 || y < 0 || x + width > showroomWidth || y + height > showroomHeight) {
                             break;
                         }
             
-                        const testBlock = { ...movingBlock, x, y };
-                        const hasCollision = otherBlocks.some(block => checkCollision(testBlock, block));
+                        const testdisplay = { ...movingdisplay, x, y };
+                        const hasCollision = otherdisplays.some(display => checkCollision(testdisplay, display));
                         
                         if (!hasCollision) {
                             const distance = Math.abs(x - startX) + Math.abs(y - startY);
@@ -368,40 +368,40 @@
             };
 
             const handleMouseDown = (e) => {
-                const pos = getGridPosition(e.clientX, e.clientY);
-                const block = blocks.find(b => {
+                const pos = getShowroomPosition(e.clientX, e.clientY);
+                const display = displays.find(b => {
                     const width = b.rotation === 90 ? b.height : b.width;
                     const height = b.rotation === 90 ? b.width : b.height;
                     return pos.x >= b.x && pos.x < b.x + width && pos.y >= b.y && pos.y < b.y + height;
                 });
                 
-                if (block) {
-                    setSelectedBlockId(block.id);
+                if (display) {
+                    setSelecteddisplayId(display.id);
                     setDragState({
-                        blockId: block.id,
-                        offsetX: pos.x - block.x,
-                        offsetY: pos.y - block.y
+                        displayId: display.id,
+                        offsetX: pos.x - display.x,
+                        offsetY: pos.y - display.y
                     });
-                    startDragPos.current = { x: block.x, y: block.y };
+                    startDragPos.current = { x: display.x, y: display.y };
                 } else {
-                    setSelectedBlockId(null);
+                    setSelecteddisplayId(null);
                 }
             };
 
             const handleMouseMove = (e) => {
                 if (dragState) {
-                    const pos = getGridPosition(e.clientX, e.clientY);
-                    const block = blocks.find(b => b.id === dragState.blockId);
-                    if (!block) return;
+                    const pos = getShowroomPosition(e.clientX, e.clientY);
+                    const display = displays.find(b => b.id === dragState.displayId);
+                    if (!display) return;
                     
-                    const width = block.rotation === 90 ? block.height : block.width;
-                    const height = block.rotation === 90 ? block.width : block.height;
+                    const width = display.rotation === 90 ? display.height : display.width;
+                    const height = display.rotation === 90 ? display.width : display.height;
                     
-                    setBlocks(prevBlocks => prevBlocks.map(b => 
-                        b.id === dragState.blockId ? { 
+                    setdisplays(prevdisplays => prevdisplays.map(b => 
+                        b.id === dragState.displayId ? { 
                             ...b, 
-                            x: Math.max(0, Math.min(pos.x - dragState.offsetX, gridWidth - width)), 
-                            y: Math.max(0, Math.min(pos.y - dragState.offsetY, gridHeight - height)) 
+                            x: Math.max(0, Math.min(pos.x - dragState.offsetX, showroomWidth - width)), 
+                            y: Math.max(0, Math.min(pos.y - dragState.offsetY, showroomHeight - height)) 
                         } : b
                     ));
                 }
@@ -409,28 +409,28 @@
 
             const handleMouseUp = () => {
                 if (dragState) {
-                    const draggedBlock = blocks.find(b => b.id === dragState.blockId);
-                    if (draggedBlock) {
-                        const otherBlocks = blocks.filter(b => b.id !== dragState.blockId);
+                    const draggeddisplay = displays.find(b => b.id === dragState.displayId);
+                    if (draggeddisplay) {
+                        const otherdisplays = displays.filter(b => b.id !== dragState.displayId);
                         const newPos = { 
-                            x: draggedBlock.x, 
-                            y: draggedBlock.y,
-                            width: draggedBlock.rotation === 90 ? draggedBlock.height : draggedBlock.width,
-                            height: draggedBlock.rotation === 90 ? draggedBlock.width : draggedBlock.height
+                            x: draggeddisplay.x, 
+                            y: draggeddisplay.y,
+                            width: draggeddisplay.rotation === 90 ? draggeddisplay.height : draggeddisplay.width,
+                            height: draggeddisplay.rotation === 90 ? draggeddisplay.width : draggeddisplay.height
                         };
                         
-                        const hasCollision = otherBlocks.some(block => checkCollision(newPos, block));
+                        const hasCollision = otherdisplays.some(display => checkCollision(newPos, display));
                         if (hasCollision) {
-                            const validPosition = findNearestValidPosition(draggedBlock, otherBlocks, draggedBlock.x, draggedBlock.y);
+                            const validPosition = findNearestValidPosition(draggeddisplay, otherdisplays, draggeddisplay.x, draggeddisplay.y);
                             if (validPosition) {
-                                setBlocks(prevBlocks => prevBlocks.map(b =>
-                                    b.id === dragState.blockId ? { ...b, x: validPosition.x, y: validPosition.y } : b
+                                setdisplays(prevdisplays => prevdisplays.map(b =>
+                                    b.id === dragState.displayId ? { ...b, x: validPosition.x, y: validPosition.y } : b
                                 ));
                             } else {
-                                setBlocks(prevBlocks => prevBlocks.map(b =>
-                                    b.id === dragState.blockId ? { ...b, x: startDragPos.current.x, y: startDragPos.current.y } : b
+                                setdisplays(prevdisplays => prevdisplays.map(b =>
+                                    b.id === dragState.displayId ? { ...b, x: startDragPos.current.x, y: startDragPos.current.y } : b
                                 ));
-                                setNoSpaceWarning({ message: 'The block could not be placed there and has been returned to its original position.' });
+                                setNoSpaceWarning({ message: 'The display could not be placed there and has been returned to its original position.' });
                             }
                         }
                     }
@@ -456,42 +456,42 @@
                 handleMouseUp();
             };
 
-            const handleStoredBlockClick = (blockId) => {
-                const blockToRetrieve = storedBlocks.find(b => b.id === blockId);
-                if (blockToRetrieve) {
-                    const newBlock = { ...blockToRetrieve, id: nextBlockId };
-                    const otherBlocks = [...blocks, ...storedBlocks.filter(b => b.id !== blockId)];
+            const handleStoreddisplayClick = (displayId) => {
+                const displayToRetrieve = storeddisplays.find(b => b.id === displayId);
+                if (displayToRetrieve) {
+                    const newdisplay = { ...displayToRetrieve, id: nextdisplayId };
+                    const otherdisplays = [...displays, ...storeddisplays.filter(b => b.id !== displayId)];
 
-                    const validPosition = findFirstValidPositionOnGrid(newBlock, otherBlocks);
+                    const validPosition = findFirstValidPositionOnShowroom(newdisplay, otherdisplays);
 
                     if (validPosition) {
-                        newBlock.x = validPosition.x;
-                        newBlock.y = validPosition.y;
-                        setBlocks(prev => [...prev, newBlock]);
-                        setStoredBlocks(prev => prev.filter(b => b.id !== blockId));
-                        setNextBlockId(nextBlockId + 1);
-                        setSelectedBlockId(newBlock.id);
+                        newdisplay.x = validPosition.x;
+                        newdisplay.y = validPosition.y;
+                        setdisplays(prev => [...prev, newdisplay]);
+                        setStoreddisplays(prev => prev.filter(b => b.id !== displayId));
+                        setNextdisplayId(nextdisplayId + 1);
+                        setSelecteddisplayId(newdisplay.id);
                     } else {
-                        setNoSpaceWarning({ message: 'No valid spot found for the block. It will remain in storage.' });
+                        setNoSpaceWarning({ message: 'No valid spot found for the display. It will remain in storage.' });
                     }
                 }
             };
             
-            const storeBlock = () => {
-                const blockToStore = blocks.find(b => b.id === selectedBlockId);
-                if (blockToStore) {
-                    setBlocks(prevBlocks => prevBlocks.filter(b => b.id !== selectedBlockId));
-                    setStoredBlocks(prevStored => [...prevStored, blockToStore]);
-                    setSelectedBlockId(null);
+            const storedisplay = () => {
+                const displayToStore = displays.find(b => b.id === selecteddisplayId);
+                if (displayToStore) {
+                    setdisplays(prevdisplays => prevdisplays.filter(b => b.id !== selecteddisplayId));
+                    setStoreddisplays(prevStored => [...prevStored, displayToStore]);
+                    setSelecteddisplayId(null);
                 }
             };
             
-            const spawnBlock = (displayType) => {
+            const spawndisplay = (displayType) => {
                 const config = displayConfigs[displayType];
                 const availableTypes = displayAvailableTypes[displayType];
                 
-                let newBlock = {
-                    id: nextBlockId, 
+                let newdisplay = {
+                    id: nextdisplayId, 
                     displayType: parseInt(displayType), 
                     type: availableTypes[0],
                     width: config.width, 
@@ -501,74 +501,74 @@
                     rotation: 0
                 };
                 
-                const otherBlocks = [...blocks, ...storedBlocks];
-                let validPosition = findFirstValidPositionOnGrid(newBlock, otherBlocks);
+                const otherdisplays = [...displays, ...storeddisplays];
+                let validPosition = findFirstValidPositionOnShowroom(newdisplay, otherdisplays);
                 
                 if (!validPosition) {
-                    const rotatedBlock = {
-                        ...newBlock,
+                    const rotateddisplay = {
+                        ...newdisplay,
                         rotation: 90,
                     };
-                    validPosition = findFirstValidPositionOnGrid(rotatedBlock, otherBlocks);
+                    validPosition = findFirstValidPositionOnShowroom(rotateddisplay, otherdisplays);
                     if (validPosition) {
-                        newBlock = rotatedBlock;
+                        newdisplay = rotateddisplay;
                     }
                 }
 
                 if (validPosition) {
-                    newBlock.x = validPosition.x;
-                    newBlock.y = validPosition.y;
-                    setBlocks(prevBlocks => [...prevBlocks, newBlock]);
-                    setNextBlockId(nextBlockId + 1);
+                    newdisplay.x = validPosition.x;
+                    newdisplay.y = validPosition.y;
+                    setdisplays(prevdisplays => [...prevdisplays, newdisplay]);
+                    setNextdisplayId(nextdisplayId + 1);
                 } else {
-                    setNoSpaceWarning({ message: `No space found for this display on the board.` });
+                    setNoSpaceWarning({ message: `No space found.` });
                 }
             };
 
-            const rotateBlock = () => {
-                setBlocks(prevBlocks => {
-                    const blockToRotate = prevBlocks.find(b => b.id === selectedBlockId);
-                    if (!blockToRotate) return prevBlocks;
+            const rotatedisplay = () => {
+                setdisplays(prevdisplays => {
+                    const displayToRotate = prevdisplays.find(b => b.id === selecteddisplayId);
+                    if (!displayToRotate) return prevdisplays;
 
-                    const newRotation = blockToRotate.rotation === 0 ? 90 : 0;
-                    const rotatedBlock = { ...blockToRotate, rotation: newRotation };
+                    const newRotation = displayToRotate.rotation === 0 ? 90 : 0;
+                    const rotateddisplay = { ...displayToRotate, rotation: newRotation };
                     
-                    const otherBlocks = prevBlocks.filter(b => b.id !== selectedBlockId);
-                    const validPosition = findNearestValidPosition(rotatedBlock, otherBlocks, blockToRotate.x, blockToRotate.y);
+                    const otherdisplays = prevdisplays.filter(b => b.id !== selecteddisplayId);
+                    const validPosition = findNearestValidPosition(rotateddisplay, otherdisplays, displayToRotate.x, displayToRotate.y);
 
                     if (validPosition) {
-                        return prevBlocks.map(b =>
-                            b.id === selectedBlockId ? { ...rotatedBlock, x: validPosition.x, y: validPosition.y } : b
+                        return prevdisplays.map(b =>
+                            b.id === selecteddisplayId ? { ...rotateddisplay, x: validPosition.x, y: validPosition.y } : b
                         );
                     } else {
-                        setNoSpaceWarning({ message: 'Cannot rotate this display. There is no available space near its current location for the new orientation.' });
-                        return prevBlocks;
+                        setNoSpaceWarning({ message: 'Cannot rotate this display. There is no available space near its location to rotate.' });
+                        return prevdisplays;
                     }
                 });
             };
 
-            const changeBlockType = (e) => {
+            const changedisplayType = (e) => {
                 const newType = e.target.value;
-                setBlocks(prevBlocks => prevBlocks.map(b => 
-                    b.id === selectedBlockId ? { ...b, type: newType } : b
+                setdisplays(prevdisplays => prevdisplays.map(b => 
+                    b.id === selecteddisplayId ? { ...b, type: newType } : b
                 ));
             };
 
-            const deleteBlock = () => {
-                setBlocks(prevBlocks => prevBlocks.filter(b => b.id !== selectedBlockId));
-                setSelectedBlockId(null);
+            const deletedisplay = () => {
+                setdisplays(prevdisplays => prevdisplays.filter(b => b.id !== selecteddisplayId));
+                setSelecteddisplayId(null);
             };
             
             const clearLayout = () => {
-                setBlocks([]);
-                setStoredBlocks([]);
-                setSelectedBlockId(null);
+                setdisplays([]);
+                setStoreddisplays([]);
+                setSelecteddisplayId(null);
             };
 
             const handleCreateCustomType = () => {
                 const name = customType.name.trim().toLowerCase();
                 if (!name || typeColors[name]) {
-                    setCustomDisplayWarning({ title: "Invalid Name", message: "Please enter a valid, unique name for the new typing." });
+                    setCustomDisplayWarning({ title: "Invalid Name", message: "Please enter a unique name for the new type." });
                     return;
                 }
                 setConfirmCreateType({ name, color: customType.color });
@@ -590,7 +590,7 @@
                 
                 if (!name || types.length === 0) {
                     setCustomDisplayWarning({
-                        title: "Missing Information",
+                        title: "Missing Indisplayation",
                         message: "Please enter a display name and select at least one type before creating."
                     });
                     return;
@@ -601,7 +601,7 @@
                 setDisplayConfigs(prev => ({ ...prev, [newDisplayType]: { ...customDisplay, name } }));
                 setDisplayAvailableTypes(prev => ({ ...prev, [newDisplayType]: types }));
                 
-                spawnBlock(newDisplayType);
+                spawndisplay(newDisplayType);
                 setCustomDisplay({ name: '', width: 8, height: 8, types: [] });
             };
 
@@ -624,37 +624,37 @@
                 setCustomDisplay(prev => ({ ...prev, height: value }));
             };
 
-            const handleGridSizeChange = (e, dimension) => {
+            const handleShowroomSizeChange = (e, dimension) => {
                 const value = parseInt(e.target.value);
                 if (dimension === 'width') {
-                    setInputGridWidth(value);
+                    setInputShowroomWidth(value);
                 } else {
-                    setInputGridHeight(value);
+                    setInputShowroomHeight(value);
                 }
             };
             
-            const applyGridSize = () => {
-                const newWidth = parseInt(inputGridWidth);
-                const newHeight = parseInt(inputGridHeight);
+            const applyShowroomSize = () => {
+                const newWidth = parseInt(inputShowroomWidth);
+                const newHeight = parseInt(inputShowroomHeight);
                 if (newWidth >= 10 && newWidth <= 200 && newHeight >= 10 && newHeight <= 200) {
-                    if (newWidth < gridWidth || newHeight < gridHeight || blocks.some(b => b.x + b.width > newWidth || b.y + b.height > newHeight)) {
-                        setShowGridSizeModal(true);
+                    if (newWidth < showroomWidth || newHeight < showroomHeight || displays.some(b => b.x + b.width > newWidth || b.y + b.height > newHeight)) {
+                        setShowShowroomSizeModal(true);
                     } else {
-                        setGridWidth(newWidth);
-                        setGridHeight(newHeight);
+                        setShowroomWidth(newWidth);
+                        setShowroomHeight(newHeight);
                     }
                 } else {
-                    setNoSpaceWarning({ title: "Invalid Grid Size", message: "Please enter values between 10 and 200." });
+                    setNoSpaceWarning({ title: "Invalid Showroom Size", message: "Please enter a number between 10 and 200." });
                 }
             };
 
-            const confirmGridSizeChange = () => {
-                const newWidth = parseInt(inputGridWidth);
-                const newHeight = parseInt(inputGridHeight);
-                setGridWidth(newWidth);
-                setGridHeight(newHeight);
+            const confirmShowroomSizeChange = () => {
+                const newWidth = parseInt(inputShowroomWidth);
+                const newHeight = parseInt(inputShowroomHeight);
+                setShowroomWidth(newWidth);
+                setShowroomHeight(newHeight);
                 clearLayout();
-                setShowGridSizeModal(false);
+                setShowShowroomSizeModal(false);
             };
 
             const deleteCustomTypes = () => {
@@ -669,7 +669,7 @@
                 setConfirmDelete({
                     type: 'types',
                     items: typesToDelete,
-                    message: `Are you sure you want to delete the following custom types?\n\n- ${typesToDelete.join('\n- ')}\n\nThis will remove them from all custom displays and blocks on the board.`
+                    message: `Are you sure you want to delete these custom types?\n\n- ${typesToDelete.join('\n- ')}\n\nThis will remove them from all custom displays on the board.`
                 });
             };
 
@@ -686,14 +686,14 @@
                     items.forEach(t => delete newTypeColors[t]);
                     setTypeColors(newTypeColors);
 
-                    setBlocks(prevBlocks => prevBlocks.map(b => {
+                    setdisplays(prevdisplays => prevdisplays.map(b => {
                         if (items.includes(b.type)) {
                             const newType = newAvailableTypes[b.displayType]?.[0] || 'water';
                             return { ...b, type: newType };
                         }
                         return b;
                     }));
-                    setStoredBlocks(prevStored => prevStored.map(b => {
+                    setStoreddisplays(prevStored => prevStored.map(b => {
                          if (items.includes(b.type)) {
                             const newType = newAvailableTypes[b.displayType]?.[0] || 'water';
                             return { ...b, type: newType };
@@ -715,11 +715,11 @@
                         return newState;
                     });
                     
-                    setBlocks(prev => prev.filter(b => b.displayType !== parseInt(displayType)));
-                    setStoredBlocks(prev => prev.filter(b => b.displayType !== parseInt(displayType)));
+                    setdisplays(prev => prev.filter(b => b.displayType !== parseInt(displayType)));
+                    setStoreddisplays(prev => prev.filter(b => b.displayType !== parseInt(displayType)));
                     
-                    if (selectedBlockId && blocks.find(b => b.id === selectedBlockId)?.displayType === parseInt(displayType)) {
-                        setSelectedBlockId(null);
+                    if (selecteddisplayId && displays.find(b => b.id === selecteddisplayId)?.displayType === parseInt(displayType)) {
+                        setSelecteddisplayId(null);
                     }
                 }
                 setConfirmDelete(null);
@@ -731,7 +731,7 @@
                     type: 'display',
                     displayType,
                     name: config.name,
-                    message: `Are you sure you want to delete the display '${config.name}'? This will permanently remove all instances of this block from the board and storage.`
+                    message: `Are you sure you want to delete the display '${config.name}'? This will permanently remove all instances of this display from the board and storage.`
                 });
             };
 
@@ -741,13 +741,13 @@
 
             const exportLayout = () => {
                 const layoutData = {
-                    timestamp: new Date().toISOString(), gridWidth: gridWidth, gridHeight: gridHeight, customTypes: typeColors,
+                    timestamp: new Date().toISOString(), showroomWidth: showroomWidth, showroomHeight: showroomHeight, customTypes: typeColors,
                     displayConfigs: displayConfigs, displayAvailableTypes: displayAvailableTypes,
-                    blocks: blocks.map(block => ({
-                        displayType: block.displayType, type: block.type, x: block.x, y: block.y, rotation: block.rotation
+                    displays: displays.map(display => ({
+                        displayType: display.displayType, type: display.type, x: display.x, y: display.y, rotation: display.rotation
                     })),
-                    storedBlocks: storedBlocks.map(block => ({
-                        displayType: block.displayType, type: block.type, rotation: block.rotation
+                    storeddisplays: storeddisplays.map(display => ({
+                        displayType: display.displayType, type: display.type, rotation: display.rotation
                     }))
                 };
     
@@ -775,27 +775,27 @@
                         if (layoutData.customTypes) setTypeColors(layoutData.customTypes);
                         if (layoutData.displayConfigs) setDisplayConfigs(layoutData.displayConfigs);
                         if (layoutData.displayAvailableTypes) setDisplayAvailableTypes(layoutData.displayAvailableTypes);
-                        if (layoutData.gridWidth) setGridWidth(layoutData.gridWidth);
-                        if (layoutData.gridHeight) setGridHeight(layoutData.gridHeight);
+                        if (layoutData.showroomWidth) setShowroomWidth(layoutData.showroomWidth);
+                        if (layoutData.showroomHeight) setShowroomHeight(layoutData.showroomHeight);
 
-                        if (layoutData.blocks && Array.isArray(layoutData.blocks)) {
-                            const importedBlocks = layoutData.blocks.map((blockData, index) => ({
-                                id: index, displayType: blockData.displayType, type: blockData.type,
-                                width: layoutData.displayConfigs[blockData.displayType]?.width || 0,
-                                height: layoutData.displayConfigs[blockData.displayType]?.height || 0,
-                                x: blockData.x || 0, y: blockData.y || 0, rotation: blockData.rotation || 0
+                        if (layoutData.displays && Array.isArray(layoutData.displays)) {
+                            const importeddisplays = layoutData.displays.map((displayData, index) => ({
+                                id: index, displayType: displayData.displayType, type: displayData.type,
+                                width: layoutData.displayConfigs[displayData.displayType]?.width || 0,
+                                height: layoutData.displayConfigs[displayData.displayType]?.height || 0,
+                                x: displayData.x || 0, y: displayData.y || 0, rotation: displayData.rotation || 0
                             }));
-                            const importedStored = (layoutData.storedBlocks || []).map((blockData, index) => ({
-                                id: importedBlocks.length + index, displayType: blockData.displayType, type: blockData.type,
-                                width: layoutData.displayConfigs[blockData.displayType]?.width || 0,
-                                height: layoutData.displayConfigs[blockData.displayType]?.height || 0,
-                                x: 0, y: 0, rotation: blockData.rotation || 0
+                            const importedStored = (layoutData.storeddisplays || []).map((displayData, index) => ({
+                                id: importeddisplays.length + index, displayType: displayData.displayType, type: displayData.type,
+                                width: layoutData.displayConfigs[displayData.displayType]?.width || 0,
+                                height: layoutData.displayConfigs[displayData.displayType]?.height || 0,
+                                x: 0, y: 0, rotation: displayData.rotation || 0
                             }));
 
-                            setBlocks(importedBlocks);
-                            setStoredBlocks(importedStored);
-                            setNextBlockId(importedBlocks.length + importedStored.length);
-                            setSelectedBlockId(null);
+                            setdisplays(importeddisplays);
+                            setStoreddisplays(importedStored);
+                            setNextdisplayId(importeddisplays.length + importedStored.length);
+                            setSelecteddisplayId(null);
                         }
                     } catch (error) {
                         setNoSpaceWarning({ message: 'Error importing layout file.' });
@@ -805,20 +805,20 @@
                 event.target.value = '';
             };
 
-            const selectedBlock = blocks.find(b => b.id === selectedBlockId);
+            const selecteddisplay = displays.find(b => b.id === selecteddisplayId);
             const customTypes = Object.keys(typeColors).filter(type => !INITIAL_TYPE_COLORS.hasOwnProperty(type));
 
-            const totalArea = blocks.reduce((sum, block) => {
-                const width = block.rotation === 90 ? block.height : block.width;
-                const height = block.rotation === 90 ? block.width : block.height;
+            const totalArea = displays.reduce((sum, display) => {
+                const width = display.rotation === 90 ? display.height : display.width;
+                const height = display.rotation === 90 ? display.width : display.height;
                 return sum + (width * height);
             }, 0);
-            const totalAvailable = gridWidth * gridHeight;
+            const totalAvailable = showroomWidth * showroomHeight;
 
             return (
                 <div className="container">
                     <div className="header">
-                        <div className="title">Plot Organizer - Arxzez</div>
+                        <div className="title">Showroom Organizer - Arxzez</div>
                         <button className="theme-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
                             {isDarkMode ? '🌙 Dark Mode ᓚᘏᗢ' : '☀️ Light Mode'}
                         </button>
@@ -829,14 +829,14 @@
                             <div className="panel">
                                 <h3 style={{ marginBottom: '1rem' }}>Controls</h3>
                                 <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px', fontSize: '14px' }}>Grid Size (studs):</label>
+                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px', fontSize: '14px' }}>Showroom Size (studs):</label>
                                     <div style={{ display: 'flex', gap: '8px' }}>
                                         <div style={{ flex: 1 }}>
                                             <input
                                                 type="number"
-                                                value={inputGridWidth}
-                                                onChange={(e) => handleGridSizeChange(e, 'width')}
-                                                className="form-input"
+                                                value={inputShowroomWidth}
+                                                onChange={(e) => handleShowroomSizeChange(e, 'width')}
+                                                className="display-input"
                                                 min="10"
                                                 max="200"
                                                 placeholder="Width"
@@ -845,37 +845,37 @@
                                         <div style={{ flex: 1 }}>
                                             <input
                                                 type="number"
-                                                value={inputGridHeight}
-                                                onChange={(e) => handleGridSizeChange(e, 'height')}
-                                                className="form-input"
+                                                value={inputShowroomHeight}
+                                                onChange={(e) => handleShowroomSizeChange(e, 'height')}
+                                                className="display-input"
                                                 min="10"
                                                 max="200"
                                                 placeholder="Height"
                                             />
                                         </div>
-                                        <button className="btn btn-blue" onClick={applyGridSize}>Apply</button>
+                                        <button className="btn btn-blue" onClick={applyShowroomSize}>Apply</button>
                                     </div>
                                     <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>Min: 10, Max: 200</div>
                                 </div>
-                                <button className="btn btn-blue" style={{ width: '100%', marginBottom: '8px' }} onClick={clearLayout}>Clear Board</button>
+                                <button className="btn btn-blue" style={{ width: '100%', marginBottom: '8px' }} onClick={clearLayout}>Clear Showroom</button>
                                 <button className="btn btn-green" style={{ width: '100%', marginBottom: '8px' }} onClick={exportLayout}>Export Layout</button>
                                 <div style={{ position: 'relative', width: '100%', marginBottom: '8px' }}>
                                     <input type="file" accept=".json" onChange={importLayout} style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} />
                                     <button className="btn btn-purple" style={{ width: '100%', pointerEvents: 'none' }}>Import Layout</button>
                                 </div>
-                                <button className="btn btn-red" style={{ width: '100%', marginBottom: '8px' }} onClick={() => setShowCustomForms(!showCustomForms)}>
-                                    {showCustomForms ? 'Close Custom Displays' : 'Open Custom Displays'}
+                                <button className="btn btn-red" style={{ width: '100%', marginBottom: '8px' }} onClick={() => setShowCustomDisplays(!showCustomDisplays)}>
+                                    {showCustomDisplays ? 'Close Custom Displays' : 'Open Custom Displays'}
                                 </button>
                             </div>
 
                             <div className="panel">
                                 <h3 style={{ marginBottom: '1rem' }}>Displays</h3>
-                                <div className="spawn-grid">
+                                <div className="spawn-showroom">
                                     {Object.entries(displayConfigs).map(([displayType, config]) => (
                                         <div key={displayType} className="spawn-item">
                                             <button 
                                                 className="spawn-btn" 
-                                                onClick={() => spawnBlock(displayType)}
+                                                onClick={() => spawndisplay(displayType)}
                                             >
                                                 <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{config.name}</span>
                                                 <br/>
@@ -896,16 +896,16 @@
                             
                             <div className="panel">
                                 <h3 style={{ marginBottom: '1rem' }}>Storage</h3>
-                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Click a block to retrieve it</div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Click a display to take it outt</div>
                                 <div className="storage-area">
-                                    {storedBlocks.map(block => {
-                                        const config = displayConfigs[block.displayType] || { name: 'Custom' };
+                                    {storeddisplays.map(display => {
+                                        const config = displayConfigs[display.displayType] || { name: 'Custom' };
                                         return (
                                             <div 
-                                                key={block.id}
-                                                className="storage-block"
-                                                style={{ backgroundColor: typeColors[block.type], cursor: 'pointer' }}
-                                                onClick={() => handleStoredBlockClick(block.id)}
+                                                key={display.id}
+                                                className="storage-display"
+                                                style={{ backgroundColor: typeColors[display.type], cursor: 'pointer' }}
+                                                onClick={() => handleStoreddisplayClick(display.id)}
                                             >
                                                 {config.name.split(' ')[0]}
                                             </div>
@@ -916,16 +916,16 @@
 
                             <div className="panel">
                                 <div>Area used: {totalArea}/{totalAvailable} studs ({((totalArea / totalAvailable) * 100).toFixed(1)}%)</div>
-                                <div>Grid: {gridWidth}x{gridHeight}</div>
+                                <div>showroom: {showroomWidth}x{showroomHeight}</div>
                             </div>
                         </div>
 
                         <div className="main">
-                            <div className="grid-and-controls">
-                                <div className="grid-container">
+                            <div className="showroom-and-controls">
+                                <div className="showroom-container">
                                     <div 
-                                        className="grid" 
-                                        ref={gridRef}
+                                        className="showroom" 
+                                        ref={showroomRef}
                                         onMouseDown={handleMouseDown}
                                         onMouseMove={handleMouseMove}
                                         onMouseUp={handleMouseUp}
@@ -933,28 +933,28 @@
                                         onTouchStart={handleTouchStart}
                                         onTouchMove={handleTouchMove}
                                         onTouchEnd={handleTouchEnd}
-                                        style={{ width: gridWidth * STUD_SIZE, height: gridHeight * STUD_SIZE }}
+                                        style={{ width: showroomWidth * STUD_SIZE, height: showroomHeight * STUD_SIZE }}
                                     >
-                                        {blocks.map(block => {
-                                            const width = block.rotation === 90 ? block.height : block.width;
-                                            const height = block.rotation === 90 ? block.width : block.height;
+                                        {displays.map(display => {
+                                            const width = display.rotation === 90 ? display.height : display.width;
+                                            const height = display.rotation === 90 ? display.width : display.height;
                                             return (
                                                 <div 
-                                                    key={block.id}
-                                                    className={`block ${selectedBlockId === block.id ? 'selected' : ''}`}
+                                                    key={display.id}
+                                                    className={`display ${selecteddisplayId === display.id ? 'selected' : ''}`}
                                                     style={{
-                                                        left: block.x * STUD_SIZE,
-                                                        top: block.y * STUD_SIZE,
+                                                        left: display.x * STUD_SIZE,
+                                                        top: display.y * STUD_SIZE,
                                                         width: width * STUD_SIZE,
                                                         height: height * STUD_SIZE,
-                                                        backgroundColor: typeColors[block.type]
+                                                        backgroundColor: typeColors[display.type]
                                                     }}
                                                 >
-                                                    <div className="block-text">
-                                                        <div>{displayConfigs[block.displayType]?.name?.split(' ')[0]}</div>
-                                                        <div style={{ textTransform: 'capitalize' }}>{block.type}</div>
+                                                    <div className="display-text">
+                                                        <div>{displayConfigs[display.displayType]?.name?.split(' ')[0]}</div>
+                                                        <div style={{ textTransdisplay: 'capitalize' }}>{display.type}</div>
                                                         <div>{width}x{height}</div>
-                                                        {block.rotation === 90 && <div>↻</div>}
+                                                        {display.rotation === 90 && <div>↻</div>}
                                                     </div>
                                                 </div>
                                             );
@@ -963,39 +963,39 @@
                                 </div>
                                 
                                 <div className="right-panel">
-                                    {selectedBlock && (
+                                    {selecteddisplay && (
                                         <div id="selectedPanel" className="panel" style={{ border: '2px solid var(--text-accent)' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                                 <div id="selectedInfo" style={{ fontWeight: 'bold' }}>
-                                                    Selected: {displayConfigs[selectedBlock.displayType]?.name}
+                                                    Selected: {displayConfigs[selecteddisplay.displayType]?.name}
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                     <span>Type:</span>
-                                                    <select value={selectedBlock.type} onChange={changeBlockType} style={{ padding: '4px', border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                                                        {displayAvailableTypes[selectedBlock.displayType]?.map(type => (
+                                                    <select value={selecteddisplay.type} onChange={changedisplayType} style={{ padding: '4px', border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                                                        {displayAvailableTypes[selecteddisplay.displayType]?.map(type => (
                                                             <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
                                                         ))}
                                                     </select>
                                                 </div>
-                                                <button className="btn btn-blue" onClick={storeBlock}>Store Display</button>
-                                                <button className="btn btn-green" onClick={rotateBlock} id="rotateBtn">
-                                                    Rotate {selectedBlock.rotation === 90 ? '(Vertical)' : '(Horizontal)'}
+                                                <button className="btn btn-blue" onClick={storedisplay}>Store Display</button>
+                                                <button className="btn btn-green" onClick={rotatedisplay} id="rotateBtn">
+                                                    Rotate {selecteddisplay.rotation === 90 ? '(Vertical)' : '(Horizontal)'}
                                                 </button>
-                                                <button className="btn btn-red" onClick={deleteBlock}>Delete Display</button>
+                                                <button className="btn btn-red" onClick={deletedisplay}>Delete Display</button>
                                             </div>
                                         </div>
                                     )}
 
-                                    {showCustomForms && (
-                                        <div id="customForms" className="panel form-panel custom-form-panel">
+                                    {showCustomDisplays && (
+                                        <div id="customDisplays" className="panel display-panel custom-display-panel">
                                             <h3 style={{ marginBottom: '1rem' }}>Custom Types</h3>
                                             <div className="input-group" style={{ marginBottom: '1rem' }}>
                                                 <div>
-                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Typing:</label>
-                                                    <input type="text" value={customType.name} onChange={(e) => setCustomType(prev => ({ ...prev, name: e.target.value }))} className="form-input" maxLength="12" />
+                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Type:</label>
+                                                    <input type="text" value={customType.name} onChange={(e) => setCustomType(prev => ({ ...prev, name: e.target.value }))} className="display-input" maxLength="12" />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Color:</label>
+                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Color:</label>
                                                     <input type="color" value={customType.color} onChange={(e) => setCustomType(prev => ({ ...prev, color: e.target.value }))} className="color-input" />
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'flex-end' }}>
@@ -1003,23 +1003,23 @@
                                                 </div>
                                             </div>
                                             <h3 style={{ marginBottom: '1rem' }}>Custom Displays</h3>
-                                            <div className="form-row">
+                                            <div className="display-row">
                                                 <div>
-                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Display Name:</label>
-                                                    <input type="text" value={customDisplay.name} onChange={(e) => setCustomDisplay(prev => ({ ...prev, name: e.target.value }))} className="form-input" maxLength="25" />
+                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Display Name:</label>
+                                                    <input type="text" value={customDisplay.name} onChange={(e) => setCustomDisplay(prev => ({ ...prev, name: e.target.value }))} className="display-input" maxLength="25" />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Width (studs):</label>
-                                                    <input type="number" value={customDisplay.width} onChange={handleCustomWidthChange} className="form-input" min="1" max={gridWidth} />
+                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Width (studs):</label>
+                                                    <input type="number" value={customDisplay.width} onChange={handleCustomWidthChange} className="display-input" min="1" max={showroomWidth} />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Height (studs):</label>
-                                                    <input type="number" value={customDisplay.height} onChange={handleCustomHeightChange} className="form-input" min="1" max={gridHeight} />
+                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Height (studs):</label>
+                                                    <input type="number" value={customDisplay.height} onChange={handleCustomHeightChange} className="display-input" min="1" max={showroomHeight} />
                                                 </div>
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
-                                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>Available Types (click to select):</label>
-                                                <div className="type-grid">
+                                                <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '8px' }}>Available Types (click to select):</label>
+                                                <div className="type-showroom">
                                                     {Object.keys(typeColors).map(type => (
                                                         <div 
                                                             key={type}
@@ -1046,7 +1046,7 @@
                             </div>
                         </div>
                     </div>
-                    {(confirmDelete || confirmCreateType || customDisplayWarning || noSpaceWarning || showGridSizeModal) && (
+                    {(confirmDelete || confirmCreateType || customDisplayWarning || noSpaceWarning || showShowroomSizeModal) && (
                         <>
                             <div className="modal-overlay"></div>
                             <div className="modal">
@@ -1063,7 +1063,7 @@
                                 {confirmCreateType && (
                                     <>
                                         <h3 style={{ marginTop: 0 }}>Confirm Creation</h3>
-                                        <p>Are you sure you want to create the new typing '{confirmCreateType.name}'?</p>
+                                        <p>Are you sure you want to create the new type '{confirmCreateType.name}'?</p>
                                         <div className="modal-buttons">
                                             <button className="btn btn-blue" onClick={confirmCreateTypeAction}>Create</button>
                                             <button className="btn btn-red" onClick={cancelCreateType}>Cancel</button>
@@ -1088,13 +1088,13 @@
                                         </div>
                                     </>
                                 )}
-                                {showGridSizeModal && (
+                                {showShowroomSizeModal && (
                                     <>
-                                        <h3 style={{ marginTop: 0 }}>Change Grid Size</h3>
-                                        <p>Changing the grid size will clear the board and all stored displays. Do you want to proceed?</p>
+                                        <h3 style={{ marginTop: 0 }}>Change showroom Size</h3>
+                                        <p>Changing the showroom size will clear the board and all stored displays. Are you sure?</p>
                                         <div className="modal-buttons">
-                                            <button className="btn btn-red" onClick={confirmGridSizeChange}>Confirm</button>
-                                            <button className="btn btn-blue" onClick={() => setShowGridSizeModal(false)}>Cancel</button>
+                                            <button className="btn btn-red" onClick={confirmShowroomSizeChange}>Confirm</button>
+                                            <button className="btn btn-blue" onClick={() => setShowShowroomSizeModal(false)}>Cancel</button>
                                         </div>
                                     </>
                                 )}
