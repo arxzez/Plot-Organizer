@@ -825,9 +825,7 @@
                     </div>
 
                     <div className="layout">
-                        {/* Sidebar */}
                         <div className="sidebar">
-                            {/* Controls */}
                             <div className="panel">
                                 <h3 style={{ marginBottom: '1rem' }}>Controls</h3>
                                 <div style={{ marginBottom: '1rem' }}>
@@ -870,7 +868,6 @@
                                 </button>
                             </div>
 
-                            {/* Displays */}
                             <div className="panel">
                                 <h3 style={{ marginBottom: '1rem' }}>Displays</h3>
                                 <div className="spawn-grid">
@@ -897,7 +894,6 @@
                                 </div>
                             </div>
                             
-                            {/* Storage */}
                             <div className="panel">
                                 <h3 style={{ marginBottom: '1rem' }}>Storage</h3>
                                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Click a block to retrieve it</div>
@@ -918,18 +914,14 @@
                                 </div>
                             </div>
 
-                            {/* Stats */}
                             <div className="panel">
                                 <div>Area used: {totalArea}/{totalAvailable} studs ({((totalArea / totalAvailable) * 100).toFixed(1)}%)</div>
                                 <div>Grid: {gridWidth}x{gridHeight}</div>
                             </div>
                         </div>
 
-                        {/* Main Area */}
                         <div className="main">
-                            {/* Grid and Controls */}
                             <div className="grid-and-controls">
-                                {/* Grid */}
                                 <div className="grid-container">
                                     <div 
                                         className="grid" 
@@ -970,9 +962,7 @@
                                     </div>
                                 </div>
                                 
-                                {/* Right Panels (Selected and Custom Displays) */}
                                 <div className="right-panel">
-                                    {/* Selected Block Panel */}
                                     {selectedBlock && (
                                         <div id="selectedPanel" className="panel" style={{ border: '2px solid var(--text-accent)' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -996,7 +986,6 @@
                                         </div>
                                     )}
 
-                                    {/* Custom Displays Panel */}
                                     {showCustomForms && (
                                         <div id="customForms" className="panel form-panel custom-form-panel">
                                             <h3 style={{ marginBottom: '1rem' }}>Custom Types</h3>
@@ -1057,7 +1046,6 @@
                             </div>
                         </div>
                     </div>
-                    {/* Confirmation Modals */}
                     {(confirmDelete || confirmCreateType || customDisplayWarning || noSpaceWarning || showGridSizeModal) && (
                         <>
                             <div className="modal-overlay"></div>
@@ -1121,3 +1109,4 @@
     </script>
 </body>
 </html>
+
