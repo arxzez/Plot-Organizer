@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plot Organizer - 
+Arxzez</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #f3f4f6;
+            --bg-secondary: white;
+            --bg-tertiary: #f9fafb;
+            --border-primary: #d1d5db;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-accent: #fbbf24;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --bg-tertiary: #374151;
+            --border-primary: #4b5563;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-accent: #fbbf24;
+        }
+        
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            font-family: Arial, sans-serif; 
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        .container { padding: 1rem; max-width: 1400px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .title { font-size: 1.5rem; font-weight: bold; }
+        .theme-toggle { 
+            padding: 8px 16px; 
+            border: 1px solid var(--border-primary); 
+            border-radius: 4px; 
+            background: var(--bg-secondary); 
+            color: var(--text-primary); 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        .theme-toggle:hover { background: var(--bg-tertiary); }
+        .layout { display: flex; gap: 1rem; }
+        .sidebar { width: 300px; flex-shrink: 0; }
+        .main { flex: 1; display: flex; flex-direction: column; }
+        .panel { 
+            background: var(--bg-secondary); 
+            border-radius: 8px; 
+            border: 1px solid var(--border-primary); 
+            padding: 1rem; 
+            margin-bottom: 1rem; 
+            transition: all 0.3s ease;
+        }
+        .form-panel { border: 2px solid #ef4444; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; color: white; margin: 2px; }
+        .btn-blue { background: #3b82f6; } .btn-blue:hover { background: #2563eb; }
+        .btn-green { background: #10b981; } .btn-green:hover { background: #059669; }
+        .btn-red { background: #ef4444; } .btn-red:hover { background: #dc2626; }
+        .btn-purple { background: #8b5cf6; } .btn-purple:hover { background: #7c3aed; }
+        .spawn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .spawn-item { position: relative; display: flex; align-items: center; }
+        .spawn-btn { 
+            flex-grow: 1;
+            padding: 8px; 
+            border: 1px solid var(--border-primary); 
+            background: var(--bg-secondary); 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            color: var(--text-primary);
+            text-align: center;
+        }
+        .spawn-btn:hover { background: var(--bg-tertiary); }
+        .delete-btn {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+        .delete-btn:hover { background-color: var(--bg-tertiary); }
+        .grid-and-controls { 
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            flex: 1;
+        }
+        .grid-container { 
+            border: 2px solid var(--border-primary); 
+            overflow: auto; 
+            background: var(--bg-secondary);
+            width: fit-content;
+            height: fit-content;
+            flex-shrink: 0;
+            padding: 1rem;
+            position: relative; 
+        }
+        .grid { 
+            position: relative; 
+            user-select: none; 
+            background-image: 
+                linear-gradient(to right, var(--border-primary) 1px, transparent 1px), 
+                linear-gradient(to bottom, var(--border-primary) 1px, transparent 1px);
+            background-size: 8px 8px;
+            cursor: grab;
+            touch-action: none;
+            flex-shrink: 0;
+            width: calc(82 * 8px); 
+            height: calc(82 * 8px);
+            border-right: 1px solid var(--border-primary);
+            border-bottom: 1px solid var(--border-primary);
+        }
+        .block { 
+            position: absolute; 
+            border: 2px solid #1f2937; 
+            border-radius: 4px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            font-weight: bold; 
+            font-size: 12px; 
+            cursor: grab; 
+            touch-action: none;
+        }
+        .block.selected { border: 4px solid var(--text-accent); z-index: 10; }
+        .block-text { text-align: center; }
+        .form-input { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid var(--border-primary); 
+            border-radius: 4px; 
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .type-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+            gap: 8px; 
+        }
+        .type-btn { padding: 8px; border-radius: 4px; cursor: pointer; text-align: center; font-size: 12px; font-weight: bold; color: white; }
+        .storage-block { 
+            display: inline-block; 
+            margin: 2px; 
+            border: 1px solid #1f2937; 
+            border-radius: 4px; 
+            width: 32px; 
+            height: 32px; 
+            color: white; 
+            font-weight: bold; 
+            font-size: 8px; 
+            text-align: center;
+            line-height: 30px;
+        }
+        .storage-block:hover { opacity: 0.8; }
+        .storage-area { min-height: 80px; border: 2px dashed var(--border-primary); border-radius: 8px; padding: 8px; background: var(--bg-tertiary); }
+        .storage-area-highlight { border-color: #3b82f6 !important; background-color: #eff6ff !important; }
+        .hidden { display: none; }
+        .dragging { opacity: 0.5; z-index: 100; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 12px; }
+        .legend-colors { display: flex; gap: 2px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 2px; }
+        
+        .right-panel {
+            flex-shrink: 0;
+            width: 300px;
+        }
+        .custom-form-panel {
+            width: 300px;
+        }
+        .input-group {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .input-group > div {
+            flex: 1;
+        }
+        .color-input {
+            width: 100%;
+            height: 38px;
+            padding: 0;
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+        }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+            width: 90%;
+            max-width: 400px;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.2);
+            z-index: 999;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const ReactDOM = window.ReactDOM;
+
+        const GRID_SIZE = 82;
+        const STUD_SIZE = 8;
+        const INITIAL_TYPE_COLORS = {
+            water: '#4A90E2', psychic: '#E91E63', darkness: '#424242', lightning: '#FFC107',
+            grass: '#4CAF50', metal: '#9E9E9E', fighting: '#FF5722', fire: '#FF9800'
+        };
+        const INITIAL_DISPLAY_CONFIGS = {
+            1: { width: 8, height: 8, name: 'Small Display' },
+            2: { width: 12, height: 12, name: 'Mountain Display' },
+            3: { width: 8, height: 8, name: 'Habitat Display' },
+            4: { width: 12, height: 12, name: 'Steampunk Display' },
+            5: { width: 10, height: 10, name: 'Cloud Display' },
+            6: { width: 16, height: 8, name: 'Tree Display' },
+            7: { width: 4, height: 4, name: 'Basic Display' }
+        };
+        const INITIAL_DISPLAY_AVAILABLE_TYPES = {
+            1: ['darkness', 'lightning'], 2: ['water', 'psychic', 'fighting'], 3: ['grass', 'water'],
+            4: ['metal', 'fighting', 'psychic'], 5: ['darkness', 'lightning', 'water'], 
+            6: ['darkness', 'grass', 'psychic'], 7: ['fire', 'grass', 'water']
+        };
+
+        const App = () => {
+            const [blocks, setBlocks] = useState([]);
+            const [storedBlocks, setStoredBlocks] = useState([]);
+            const [dragState, setDragState] = useState(null);
+            const [nextBlockId, setNextBlockId] = useState(0);
+            const [selectedBlockId, setSelectedBlockId] = useState(null);
+            const [isDarkMode, setIsDarkMode] = useState(false);
+            const [showCustomForms, setShowCustomForms] = useState(false);
+            const [customDisplay, setCustomDisplay] = useState({ name: '', width: 8, height: 8, types: [] });
+            const [customType, setCustomType] = useState({ name: '', color: '#FF6B6B' });
+            const [typeColors, setTypeColors] = useState(INITIAL_TYPE_COLORS);
+            const [displayConfigs, setDisplayConfigs] = useState(INITIAL_DISPLAY_CONFIGS);
+            const [displayAvailableTypes, setDisplayAvailableTypes] = useState(INITIAL_DISPLAY_AVAILABLE_TYPES);
+            const [confirmDelete, setConfirmDelete] = useState(null);
+            const [confirmCreateType, setConfirmCreateType] = useState(null);
+            const [customDisplayWarning, setCustomDisplayWarning] = useState(null);
+            const [noSpaceWarning, setNoSpaceWarning] = useState(null);
+
+            const gridRef = useRef(null);
+            const startDragPos = useRef(null);
+
+            useEffect(() => {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme) {
+                    setIsDarkMode(savedTheme === 'dark');
+                }
+            }, []);
+
+            useEffect(() => {
+                document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            }, [isDarkMode]);
+
+            const getGridPosition = (clientX, clientY) => {
+                const rect = gridRef.current.getBoundingClientRect();
+                const x = Math.floor((clientX - rect.left) / STUD_SIZE);
+                const y = Math.floor((clientY - rect.top) / STUD_SIZE);
+                return { x: Math.max(0, Math.min(x, GRID_SIZE - 1)), y: Math.max(0, Math.min(y, GRID_SIZE - 1)) };
+            };
+
+            const checkCollision = (block1, block2) => {
+                const b1W = block1.rotation === 90 ? block1.height : block1.width;
+                const b1H = block1.rotation === 90 ? block1.width : block1.height;
+                const b2W = block2.rotation === 90 ? block2.height : block2.width;
+                const b2H = block2.rotation === 90 ? block2.width : block2.height;
+                return !(block1.x >= block2.x + b2W || block2.x >= block1.x + b1W || block1.y >= block2.y + b2H || block2.y >= block1.y + b1H);
+            };
+
+            const findFirstValidPositionOnGrid = (movingBlock, otherBlocks) => {
+                const width = movingBlock.rotation === 90 ? movingBlock.height : movingBlock.width;
+                const height = movingBlock.rotation === 90 ? movingBlock.width : movingBlock.height;
+                
+                for (let y = 0; y <= GRID_SIZE - height; y++) {
+                    for (let x = 0; x <= GRID_SIZE - width; x++) {
+                        const tempBlock = { ...movingBlock, x, y };
+                        const hasCollision = otherBlocks.some(block => checkCollision(tempBlock, block));
+                        if (!hasCollision) {
+                            return { x, y };
+                        }
+                    }
+                }
+                return null;
+            };
+
+            const findNearestValidPosition = (movingBlock, otherBlocks, startX, startY) => {
+                const width = movingBlock.rotation === 90 ? movingBlock.height : movingBlock.width;
+                const height = movingBlock.rotation === 90 ? movingBlock.width : movingBlock.height;
+                
+                const tempBlock = { ...movingBlock, x: startX, y: startY };
+                if (startX >= 0 && startY >= 0 && startX + width <= GRID_SIZE && startY + height <= GRID_SIZE) {
+                    const hasCollision = otherBlocks.some(block => checkCollision(tempBlock, block));
+                    if (!hasCollision) {
+                        return { x: startX, y: startY };
+                    }
+                }
+            
+                const directions = [{ dx: 1, dy: 0 }, { dx: -1, dy: 0 }, { dx: 0, dy: 1 }, { dx: 0, dy: -1 }];
+                let minDistance = Infinity;
+                let bestPosition = null;
+            
+                for (const { dx, dy } of directions) {
+                    for (let i = 1; i < GRID_SIZE; i++) {
+                        const x = startX + i * dx;
+                        const y = startY + i * dy;
+            
+                        if (x < 0 || y < 0 || x + width > GRID_SIZE || y + height > GRID_SIZE) {
+                            break;
+                        }
+            
+                        const testBlock = { ...movingBlock, x, y };
+                        const hasCollision = otherBlocks.some(block => checkCollision(testBlock, block));
+                        
+                        if (!hasCollision) {
+                            const distance = Math.abs(x - startX) + Math.abs(y - startY);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                bestPosition = { x, y };
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+                return bestPosition;
+            };
+
+            const handleMouseDown = (e) => {
+                const pos = getGridPosition(e.clientX, e.clientY);
+                const block = blocks.find(b => {
+                    const width = b.rotation === 90 ? b.height : b.width;
+                    const height = b.rotation === 90 ? b.width : b.height;
+                    return pos.x >= b.x && pos.x < b.x + width && pos.y >= b.y && pos.y < b.y + height;
+                });
+                
+                if (block) {
+                    setSelectedBlockId(block.id);
+                    setDragState({
+                        blockId: block.id,
+                        offsetX: pos.x - block.x,
+                        offsetY: pos.y - block.y
+                    });
+                    startDragPos.current = { x: block.x, y: block.y };
+                } else {
+                    setSelectedBlockId(null);
+                }
+            };
+
+            const handleMouseMove = (e) => {
+                if (dragState) {
+                    const pos = getGridPosition(e.clientX, e.clientY);
+                    const block = blocks.find(b => b.id === dragState.blockId);
+                    if (!block) return;
+                    
+                    const width = block.rotation === 90 ? block.height : block.width;
+                    const height = block.rotation === 90 ? block.width : block.height;
+                    
+                    setBlocks(prevBlocks => prevBlocks.map(b => 
+                        b.id === dragState.blockId ? { 
+                            ...b, 
+                            x: Math.max(0, Math.min(pos.x - dragState.offsetX, GRID_SIZE - width)), 
+                            y: Math.max(0, Math.min(pos.y - dragState.offsetY, GRID_SIZE - height)) 
+                        } : b
+                    ));
+                }
+            };
+
+            const handleMouseUp = () => {
+                if (dragState) {
+                    const draggedBlock = blocks.find(b => b.id === dragState.blockId);
+                    if (draggedBlock) {
+                        const otherBlocks = blocks.filter(b => b.id !== dragState.blockId);
+                        const newPos = { 
+                            x: draggedBlock.x, 
+                            y: draggedBlock.y,
+                            width: draggedBlock.rotation === 90 ? draggedBlock.height : draggedBlock.width,
+                            height: draggedBlock.rotation === 90 ? draggedBlock.width : draggedBlock.height
+                        };
+                        
+                        const hasCollision = otherBlocks.some(block => checkCollision(newPos, block));
+                        if (hasCollision) {
+                            const validPosition = findNearestValidPosition(draggedBlock, otherBlocks, draggedBlock.x, draggedBlock.y);
+                            if (validPosition) {
+                                setBlocks(prevBlocks => prevBlocks.map(b =>
+                                    b.id === dragState.blockId ? { ...b, x: validPosition.x, y: validPosition.y } : b
+                                ));
+                            } else {
+                                setBlocks(prevBlocks => prevBlocks.map(b =>
+                                    b.id === dragState.blockId ? { ...b, x: startDragPos.current.x, y: startDragPos.current.y } : b
+                                ));
+                                setNoSpaceWarning({ message: 'The block could not be placed there and has been returned to its original position.' });
+                            }
+                        }
+                    }
+                }
+                setDragState(null);
+            };
+
+            const handleStoredBlockClick = (blockId) => {
+                const blockToRetrieve = storedBlocks.find(b => b.id === blockId);
+                if (blockToRetrieve) {
+                    const newBlock = { ...blockToRetrieve, id: nextBlockId };
+                    const otherBlocks = [...blocks, ...storedBlocks.filter(b => b.id !== blockId)];
+
+                    const validPosition = findFirstValidPositionOnGrid(newBlock, otherBlocks);
+
+                    if (validPosition) {
+                        newBlock.x = validPosition.x;
+                        newBlock.y = validPosition.y;
+                        setBlocks(prev => [...prev, newBlock]);
+                        setStoredBlocks(prev => prev.filter(b => b.id !== blockId));
+                        setNextBlockId(nextBlockId + 1);
+                        setSelectedBlockId(newBlock.id);
+                    } else {
+                        setNoSpaceWarning({ message: 'No valid spot found for the block. It will remain in storage.' });
+                    }
+                }
+            };
+            
+            const storeBlock = () => {
+                const blockToStore = blocks.find(b => b.id === selectedBlockId);
+                if (blockToStore) {
+                    setBlocks(prevBlocks => prevBlocks.filter(b => b.id !== selectedBlockId));
+                    setStoredBlocks(prevStored => [...prevStored, blockToStore]);
+                    setSelectedBlockId(null);
+                }
+            };
+            
+            const spawnBlock = (displayType) => {
+                const config = displayConfigs[displayType];
+                const availableTypes = displayAvailableTypes[displayType];
+                
+                let newBlock = {
+                    id: nextBlockId, 
+                    displayType: parseInt(displayType), 
+                    type: availableTypes[0],
+                    width: config.width, 
+                    height: config.height, 
+                    x: 2, 
+                    y: 2, 
+                    rotation: 0
+                };
+                
+                const otherBlocks = [...blocks, ...storedBlocks];
+                let validPosition = findFirstValidPositionOnGrid(newBlock, otherBlocks);
+                
+                if (!validPosition) {
+                    const rotatedBlock = {
+                        ...newBlock,
+                        rotation: 90,
+                    };
+                    validPosition = findFirstValidPositionOnGrid(rotatedBlock, otherBlocks);
+                    if (validPosition) {
+                        newBlock = rotatedBlock;
+                    }
+                }
+
+                if (validPosition) {
+                    newBlock.x = validPosition.x;
+                    newBlock.y = validPosition.y;
+                    setBlocks(prevBlocks => [...prevBlocks, newBlock]);
+                    setNextBlockId(nextBlockId + 1);
+                } else {
+                    setNoSpaceWarning({ message: `No space found for this display on the board.` });
+                }
+            };
+
+            const rotateBlock = () => {
+                setBlocks(prevBlocks => {
+                    const blockToRotate = prevBlocks.find(b => b.id === selectedBlockId);
+                    if (!blockToRotate) return prevBlocks;
+
+                    const newRotation = blockToRotate.rotation === 0 ? 90 : 0;
+                    const rotatedBlock = { ...blockToRotate, rotation: newRotation };
+                    
+                    const otherBlocks = prevBlocks.filter(b => b.id !== selectedBlockId);
+                    const validPosition = findNearestValidPosition(rotatedBlock, otherBlocks, blockToRotate.x, blockToRotate.y);
+
+                    if (validPosition) {
+                        return prevBlocks.map(b =>
+                            b.id === selectedBlockId ? { ...rotatedBlock, x: validPosition.x, y: validPosition.y } : b
+                        );
+                    } else {
+                        setNoSpaceWarning({ message: 'Cannot rotate this display. There is no available space near its current location for the new orientation.' });
+                        return prevBlocks;
+                    }
+                });
+            };
+
+            const changeBlockType = (e) => {
+                const newType = e.target.value;
+                setBlocks(prevBlocks => prevBlocks.map(b => 
+                    b.id === selectedBlockId ? { ...b, type: newType } : b
+                ));
+            };
+
+            const deleteBlock = () => {
+                setBlocks(prevBlocks => prevBlocks.filter(b => b.id !== selectedBlockId));
+                setSelectedBlockId(null);
+            };
+            
+            const clearLayout = () => {
+                setBlocks([]);
+                setStoredBlocks([]);
+                setSelectedBlockId(null);
+            };
+
+            const handleCreateCustomType = () => {
+                const name = customType.name.trim().toLowerCase();
+                if (!name || typeColors[name]) {
+                    setCustomDisplayWarning({ title: "Invalid Name", message: "Please enter a valid, unique name for the new typing." });
+                    return;
+                }
+                setConfirmCreateType({ name, color: customType.color });
+            };
+
+            const confirmCreateTypeAction = () => {
+                const { name, color } = confirmCreateType;
+                setTypeColors(prev => ({ ...prev, [name]: color }));
+                setCustomType({ name: '', color: '#FF6B6B' });
+                setConfirmCreateType(null);
+            };
+            
+            const cancelCreateType = () => {
+                setConfirmCreateType(null);
+            };
+
+            const createCustomDisplay = () => {
+                const { name, types } = customDisplay;
+                
+                if (!name || types.length === 0) {
+                    setCustomDisplayWarning({
+                        title: "Missing Information",
+                        message: "Please enter a display name and select at least one type before creating."
+                    });
+                    return;
+                }
+                
+                const newDisplayType = Math.max(...Object.keys(displayConfigs).map(Number), 0) + 1;
+                
+                setDisplayConfigs(prev => ({ ...prev, [newDisplayType]: { ...customDisplay, name } }));
+                setDisplayAvailableTypes(prev => ({ ...prev, [newDisplayType]: types }));
+                
+                spawnBlock(newDisplayType);
+                setCustomDisplay({ name: '', width: 8, height: 8, types: [] });
+            };
+
+            const toggleCustomType = (type) => {
+                setCustomDisplay(prev => {
+                    const newTypes = prev.types.includes(type)
+                        ? prev.types.filter(t => t !== type)
+                        : [...prev.types, type];
+                    return { ...prev, types: newTypes };
+                });
+            };
+
+            const handleWidthChange = (e) => {
+                let value = parseInt(e.target.value) || 1;
+                value = Math.min(value, GRID_SIZE);
+                value = Math.max(value, 1);
+                setCustomDisplay(prev => ({ ...prev, width: value }));
+            };
+
+            const handleHeightChange = (e) => {
+                let value = parseInt(e.target.value) || 1;
+                value = Math.min(value, GRID_SIZE);
+                value = Math.max(value, 1);
+                setCustomDisplay(prev => ({ ...prev, height: value }));
+            };
+
+            const deleteCustomTypes = () => {
+                const customTypes = Object.keys(typeColors).filter(type => !INITIAL_TYPE_COLORS.hasOwnProperty(type));
+                const typesToDelete = customTypes.filter(type => customDisplay.types.includes(type));
+
+                if (typesToDelete.length === 0) {
+                    setCustomDisplayWarning({ title: "No Types Selected", message: "Please select the custom types you want to delete." });
+                    return;
+                }
+
+                setConfirmDelete({
+                    type: 'types',
+                    items: typesToDelete,
+                    message: `Are you sure you want to delete the following custom types?\n\n- ${typesToDelete.join('\n- ')}\n\nThis will remove them from all custom displays and blocks on the board.`
+                });
+            };
+
+            const confirmDeleteAction = () => {
+                const { type, items, displayType } = confirmDelete;
+                if (type === 'types') {
+                    const newAvailableTypes = {};
+                    for (const dt in displayAvailableTypes) {
+                        newAvailableTypes[dt] = displayAvailableTypes[dt].filter(t => !items.includes(t));
+                    }
+                    setDisplayAvailableTypes(newAvailableTypes);
+
+                    const newTypeColors = { ...typeColors };
+                    items.forEach(t => delete newTypeColors[t]);
+                    setTypeColors(newTypeColors);
+
+                    setBlocks(prevBlocks => prevBlocks.map(b => {
+                        if (items.includes(b.type)) {
+                            const newType = newAvailableTypes[b.displayType]?.[0] || 'water';
+                            return { ...b, type: newType };
+                        }
+                        return b;
+                    }));
+                    setStoredBlocks(prevStored => prevStored.map(b => {
+                         if (items.includes(b.type)) {
+                            const newType = newAvailableTypes[b.displayType]?.[0] || 'water';
+                            return { ...b, type: newType };
+                        }
+                        return b;
+                    }));
+
+                    setCustomDisplay(prev => ({ ...prev, types: prev.types.filter(t => !items.includes(t)) }));
+                } else if (type === 'display') {
+                    setDisplayConfigs(prev => {
+                        const newState = { ...prev };
+                        delete newState[displayType];
+                        return newState;
+                    });
+                    
+                    setDisplayAvailableTypes(prev => {
+                        const newState = { ...prev };
+                        delete newState[displayType];
+                        return newState;
+                    });
+                    
+                    setBlocks(prev => prev.filter(b => b.displayType !== parseInt(displayType)));
+                    setStoredBlocks(prev => prev.filter(b => b.displayType !== parseInt(displayType)));
+                    
+                    if (selectedBlockId && blocks.find(b => b.id === selectedBlockId)?.displayType === parseInt(displayType)) {
+                        setSelectedBlockId(null);
+                    }
+                }
+                setConfirmDelete(null);
+            };
+
+            const handleDeleteCustomDisplayClick = (displayType) => {
+                const config = displayConfigs[displayType];
+                setConfirmDelete({
+                    type: 'display',
+                    displayType,
+                    name: config.name,
+                    message: `Are you sure you want to delete the display '${config.name}'? This will permanently remove all instances of this block from the board and storage.`
+                });
+            };
+
+            const cancelDelete = () => {
+                setConfirmDelete(null);
+            };
+
+            const exportLayout = () => {
+                const layoutData = {
+                    timestamp: new Date().toISOString(), gridSize: GRID_SIZE, customTypes: typeColors,
+                    displayConfigs: displayConfigs, displayAvailableTypes: displayAvailableTypes,
+                    blocks: blocks.map(block => ({
+                        displayType: block.displayType, type: block.type, x: block.x, y: block.y, rotation: block.rotation
+                    })),
+                    storedBlocks: storedBlocks.map(block => ({
+                        displayType: block.displayType, type: block.type, rotation: block.rotation
+                    }))
+                };
+    
+                const dataStr = JSON.stringify(layoutData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `display-layout-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            };
+
+            const importLayout = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const layoutData = JSON.parse(e.target.result);
+                        if (layoutData.customTypes) setTypeColors(layoutData.customTypes);
+                        if (layoutData.displayConfigs) setDisplayConfigs(layoutData.displayConfigs);
+                        if (layoutData.displayAvailableTypes) setDisplayAvailableTypes(layoutData.displayAvailableTypes);
+
+                        if (layoutData.blocks && Array.isArray(layoutData.blocks)) {
+                            const importedBlocks = layoutData.blocks.map((blockData, index) => ({
+                                id: index, displayType: blockData.displayType, type: blockData.type,
+                                width: layoutData.displayConfigs[blockData.displayType]?.width || 0,
+                                height: layoutData.displayConfigs[blockData.displayType]?.height || 0,
+                                x: blockData.x || 0, y: blockData.y || 0, rotation: blockData.rotation || 0
+                            }));
+                            const importedStored = (layoutData.storedBlocks || []).map((blockData, index) => ({
+                                id: importedBlocks.length + index, displayType: blockData.displayType, type: blockData.type,
+                                width: layoutData.displayConfigs[blockData.displayType]?.width || 0,
+                                height: layoutData.displayConfigs[blockData.displayType]?.height || 0,
+                                x: 0, y: 0, rotation: blockData.rotation || 0
+                            }));
+
+                            setBlocks(importedBlocks);
+                            setStoredBlocks(importedStored);
+                            setNextBlockId(importedBlocks.length + importedStored.length);
+                            setSelectedBlockId(null);
+                        }
+                    } catch (error) {
+                        setNoSpaceWarning({ message: 'Error importing layout file.' });
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            };
+
+            const selectedBlock = blocks.find(b => b.id === selectedBlockId);
+            const customTypes = Object.keys(typeColors).filter(type => !INITIAL_TYPE_COLORS.hasOwnProperty(type));
+
+            const totalArea = blocks.reduce((sum, block) => {
+                const width = block.rotation === 90 ? block.height : block.width;
+                const height = block.rotation === 90 ? block.width : block.height;
+                return sum + (width * height);
+            }, 0);
+            const totalAvailable = GRID_SIZE * GRID_SIZE;
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <div className="title">Plot Organizer - Arxzez</div>
+                        <button className="theme-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
+                            {isDarkMode ? '🌙 ᓚᘏᗢ Dark Mode' : '☀️ Light Mode'}
+                        </button>
+                    </div>
+
+                    <div className="layout">
+                        {/* Sidebar */}
+                        <div className="sidebar">
+                            {/* Controls */}
+                            <div className="panel">
+                                <h3 style={{ marginBottom: '1rem' }}>Controls</h3>
+                                <button className="btn btn-blue" style={{ width: '100%', marginBottom: '8px' }} onClick={clearLayout}>Clear Board</button>
+                                <button className="btn btn-green" style={{ width: '100%', marginBottom: '8px' }} onClick={exportLayout}>Export Layout</button>
+                                <div style={{ position: 'relative', width: '100%', marginBottom: '8px' }}>
+                                    <input type="file" accept=".json" onChange={importLayout} style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} />
+                                    <button className="btn btn-purple" style={{ width: '100%', pointerEvents: 'none' }}>Import Layout</button>
+                                </div>
+                                <button className="btn btn-red" style={{ width: '100%', marginBottom: '8px' }} onClick={() => setShowCustomForms(!showCustomForms)}>
+                                    {showCustomForms ? 'Close Custom Forms' : 'Open Custom Forms'}
+                                </button>
+                            </div>
+
+                            {/* Displays */}
+                            <div className="panel">
+                                <h3 style={{ marginBottom: '1rem' }}>Displays</h3>
+                                <div className="spawn-grid">
+                                    {Object.entries(displayConfigs).map(([displayType, config]) => (
+                                        <div key={displayType} className="spawn-item">
+                                            <button 
+                                                className="spawn-btn" 
+                                                onClick={() => spawnBlock(displayType)}
+                                            >
+                                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{config.name}</span>
+                                                <br/>
+                                                ({config.width}x{config.height})
+                                            </button>
+                                            {parseInt(displayType) > 7 && (
+                                                <button
+                                                    className="delete-btn"
+                                                    onClick={() => handleDeleteCustomDisplayClick(displayType)}
+                                                >
+                                                    🗑️
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            {/* Storage */}
+                            <div className="panel">
+                                <h3 style={{ marginBottom: '1rem' }}>Storage</h3>
+                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Click a block to retrieve it</div>
+                                <div className="storage-area">
+                                    {storedBlocks.map(block => {
+                                        const config = displayConfigs[block.displayType] || { name: 'Custom' };
+                                        return (
+                                            <div 
+                                                key={block.id}
+                                                className="storage-block"
+                                                style={{ backgroundColor: typeColors[block.type], cursor: 'pointer' }}
+                                                onClick={() => handleStoredBlockClick(block.id)}
+                                            >
+                                                {config.name.split(' ')[0]}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Stats */}
+                            <div className="panel">
+                                <div>Area used: {totalArea}/{totalAvailable} studs ({((totalArea / totalAvailable) * 100).toFixed(1)}%)</div>
+                            </div>
+                        </div>
+
+                        {/* Main Area */}
+                        <div className="main">
+                            {/* Grid and Controls */}
+                            <div className="grid-and-controls">
+                                {/* Grid */}
+                                <div className="grid-container">
+                                    <div 
+                                        className="grid" 
+                                        ref={gridRef}
+                                        onMouseDown={handleMouseDown}
+                                        onMouseMove={handleMouseMove}
+                                        onMouseUp={handleMouseUp}
+                                        onMouseLeave={handleMouseUp}
+                                    >
+                                        {blocks.map(block => {
+                                            const width = block.rotation === 90 ? block.height : block.width;
+                                            const height = block.rotation === 90 ? block.width : block.height;
+                                            return (
+                                                <div 
+                                                    key={block.id}
+                                                    className={`block ${selectedBlockId === block.id ? 'selected' : ''}`}
+                                                    style={{
+                                                        left: block.x * STUD_SIZE,
+                                                        top: block.y * STUD_SIZE,
+                                                        width: width * STUD_SIZE,
+                                                        height: height * STUD_SIZE,
+                                                        backgroundColor: typeColors[block.type]
+                                                    }}
+                                                >
+                                                    <div className="block-text">
+                                                        <div>{displayConfigs[block.displayType]?.name?.split(' ')[0]}</div>
+                                                        <div style={{ textTransform: 'capitalize' }}>{block.type}</div>
+                                                        <div>{width}x{height}</div>
+                                                        {block.rotation === 90 && <div>↻</div>}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                
+                                {/* Right Panels (Selected and Custom Displays) */}
+                                <div className="right-panel">
+                                    {/* Selected Block Panel */}
+                                    {selectedBlock && (
+                                        <div id="selectedPanel" className="panel" style={{ border: '2px solid var(--text-accent)' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                <div id="selectedInfo" style={{ fontWeight: 'bold' }}>
+                                                    Selected: {displayConfigs[selectedBlock.displayType]?.name}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span>Type:</span>
+                                                    <select value={selectedBlock.type} onChange={changeBlockType} style={{ padding: '4px', border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                                                        {displayAvailableTypes[selectedBlock.displayType]?.map(type => (
+                                                            <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <button className="btn btn-blue" onClick={storeBlock}>Store Display</button>
+                                                <button className="btn btn-green" onClick={rotateBlock} id="rotateBtn">
+                                                    Rotate {selectedBlock.rotation === 90 ? '(Vertical)' : '(Horizontal)'}
+                                                </button>
+                                                <button className="btn btn-red" onClick={deleteBlock}>Delete Display</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Custom Displays Panel */}
+                                    {showCustomForms && (
+                                        <div id="customForms" className="panel form-panel custom-form-panel">
+                                            <h3 style={{ marginBottom: '1rem' }}>Create Custom Type</h3>
+                                            <div className="input-group" style={{ marginBottom: '1rem' }}>
+                                                <div>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Typing:</label>
+                                                    <input type="text" value={customType.name} onChange={(e) => setCustomType(prev => ({ ...prev, name: e.target.value }))} className="form-input" maxLength="12" />
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Color:</label>
+                                                    <input type="color" value={customType.color} onChange={(e) => setCustomType(prev => ({ ...prev, color: e.target.value }))} className="color-input" />
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                                    <button className="btn btn-blue" onClick={handleCreateCustomType}>Create</button>
+                                                </div>
+                                            </div>
+                                            <h3 style={{ marginBottom: '1rem' }}>Create Custom Display</h3>
+                                            <div className="form-row">
+                                                <div>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Display Name:</label>
+                                                    <input type="text" value={customDisplay.name} onChange={(e) => setCustomDisplay(prev => ({ ...prev, name: e.target.value }))} className="form-input" maxLength="25" />
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Width (studs):</label>
+                                                    <input type="number" value={customDisplay.width} onChange={handleWidthChange} className="form-input" min="1" max={GRID_SIZE} />
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Height (studs):</label>
+                                                    <input type="number" value={customDisplay.height} onChange={handleHeightChange} className="form-input" min="1" max={GRID_SIZE} />
+                                                </div>
+                                            </div>
+                                            <div style={{ marginBottom: '1rem' }}>
+                                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>Available Types (click to select):</label>
+                                                <div className="type-grid">
+                                                    {Object.keys(typeColors).map(type => (
+                                                        <div 
+                                                            key={type}
+                                                            className="type-btn"
+                                                            style={{ 
+                                                                backgroundColor: typeColors[type],
+                                                                border: customDisplay.types.includes(type) ? '2px solid #3b82f6' : '1px solid var(--border-primary)', 
+                                                                color: typeColors[type] === '#424242' ? '#fff' : '#000',
+                                                            }}
+                                                            onClick={() => toggleCustomType(type)}
+                                                        >
+                                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button className="btn btn-blue" onClick={createCustomDisplay}>Create</button>
+                                                {customTypes.length > 0 && <button className="btn btn-red" onClick={deleteCustomTypes}>Delete Selected Types</button>}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Confirmation Modals */}
+                    {(confirmDelete || confirmCreateType || customDisplayWarning || noSpaceWarning) && (
+                        <>
+                            <div className="modal-overlay"></div>
+                            <div className="modal">
+                                {confirmDelete && (
+                                    <>
+                                        <h3 style={{ marginTop: 0 }}>Confirm Deletion</h3>
+                                        <p>{confirmDelete.message}</p>
+                                        <div className="modal-buttons">
+                                            <button className="btn btn-red" onClick={confirmDeleteAction}>Delete</button>
+                                            <button className="btn btn-blue" onClick={cancelDelete}>Cancel</button>
+                                        </div>
+                                    </>
+                                )}
+                                {confirmCreateType && (
+                                    <>
+                                        <h3 style={{ marginTop: 0 }}>Confirm Creation</h3>
+                                        <p>Are you sure you want to create the new typing '{confirmCreateType.name}'?</p>
+                                        <div className="modal-buttons">
+                                            <button className="btn btn-blue" onClick={confirmCreateTypeAction}>Create</button>
+                                            <button className="btn btn-red" onClick={cancelCreateType}>Cancel</button>
+                                        </div>
+                                    </>
+                                )}
+                                {customDisplayWarning && (
+                                    <>
+                                        <h3 style={{ marginTop: 0 }}>{customDisplayWarning.title}</h3>
+                                        <p>{customDisplayWarning.message}</p>
+                                        <div className="modal-buttons">
+                                            <button className="btn btn-blue" onClick={() => setCustomDisplayWarning(null)}>OK</button>
+                                        </div>
+                                    </>
+                                )}
+                                {noSpaceWarning && (
+                                    <>
+                                        <h3 style={{ marginTop: 0 }}>Cannot Place Display</h3>
+                                        <p>{noSpaceWarning.message}</p>
+                                        <div className="modal-buttons">
+                                            <button className="btn btn-blue" onClick={() => setNoSpaceWarning(null)}>OK</button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
