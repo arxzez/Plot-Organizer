@@ -117,8 +117,6 @@
             cursor: grab;
             touch-action: none;
             flex-shrink: 0;
-            width: calc(82 * 8px); 
-            height: calc(82 * 8px);
             border-right: 1px solid var(--border-primary);
             border-bottom: 1px solid var(--border-primary);
         }
@@ -236,7 +234,7 @@
         const { useState, useEffect, useRef } = React;
         const ReactDOM = window.ReactDOM;
 
-        const GRID_SIZE = 82;
+        const INITIAL_GRID_SIZE = 82;
         const STUD_SIZE = 8;
         const INITIAL_TYPE_COLORS = {
             water: '#4A90E2', psychic: '#E91E63', darkness: '#424242', lightning: '#FFC107',
@@ -274,6 +272,12 @@
             const [confirmCreateType, setConfirmCreateType] = useState(null);
             const [customDisplayWarning, setCustomDisplayWarning] = useState(null);
             const [noSpaceWarning, setNoSpaceWarning] = useState(null);
+            const [gridWidth, setGridWidth] = useState(INITIAL_GRID_SIZE);
+            const [gridHeight, setGridHeight] = useState(INITIAL_GRID_SIZE);
+            const [inputGridWidth, setInputGridWidth] = useState(INITIAL_GRID_SIZE);
+            const [inputGridHeight, setInputGridHeight] = useState(INITIAL_GRID_SIZE);
+            const [showGridSizeModal, setShowGridSizeModal] = useState(false);
+
 
             const gridRef = useRef(null);
             const startDragPos = useRef(null);
@@ -294,7 +298,7 @@
                 const rect = gridRef.current.getBoundingClientRect();
                 const x = Math.floor((clientX - rect.left) / STUD_SIZE);
                 const y = Math.floor((clientY - rect.top) / STUD_SIZE);
-                return { x: Math.max(0, Math.min(x, GRID_SIZE - 1)), y: Math.max(0, Math.min(y, GRID_SIZE - 1)) };
+                return { x: Math.max(0, Math.min(x, gridWidth - 1)), y: Math.max(0, Math.min(y, gridHeight - 1)) };
             };
 
             const checkCollision = (block1, block2) => {
@@ -309,8 +313,8 @@
                 const width = movingBlock.rotation === 90 ? movingBlock.height : movingBlock.width;
                 const height = movingBlock.rotation === 90 ? movingBlock.width : movingBlock.height;
                 
-                for (let y = 0; y <= GRID_SIZE - height; y++) {
-                    for (let x = 0; x <= GRID_SIZE - width; x++) {
+                for (let y = 0; y <= gridHeight - height; y++) {
+                    for (let x = 0; x <= gridWidth - width; x++) {
                         const tempBlock = { ...movingBlock, x, y };
                         const hasCollision = otherBlocks.some(block => checkCollision(tempBlock, block));
                         if (!hasCollision) {
@@ -326,7 +330,7 @@
                 const height = movingBlock.rotation === 90 ? movingBlock.width : movingBlock.height;
                 
                 const tempBlock = { ...movingBlock, x: startX, y: startY };
-                if (startX >= 0 && startY >= 0 && startX + width <= GRID_SIZE && startY + height <= GRID_SIZE) {
+                if (startX >= 0 && startY >= 0 && startX + width <= gridWidth && startY + height <= gridHeight) {
                     const hasCollision = otherBlocks.some(block => checkCollision(tempBlock, block));
                     if (!hasCollision) {
                         return { x: startX, y: startY };
@@ -338,11 +342,11 @@
                 let bestPosition = null;
             
                 for (const { dx, dy } of directions) {
-                    for (let i = 1; i < GRID_SIZE; i++) {
+                    for (let i = 1; i < Math.max(gridWidth, gridHeight); i++) {
                         const x = startX + i * dx;
                         const y = startY + i * dy;
             
-                        if (x < 0 || y < 0 || x + width > GRID_SIZE || y + height > GRID_SIZE) {
+                        if (x < 0 || y < 0 || x + width > gridWidth || y + height > gridHeight) {
                             break;
                         }
             
@@ -362,8 +366,7 @@
                 
                 return bestPosition;
             };
-            
-            // Mouse event handlers
+
             const handleMouseDown = (e) => {
                 const pos = getGridPosition(e.clientX, e.clientY);
                 const block = blocks.find(b => {
@@ -397,8 +400,8 @@
                     setBlocks(prevBlocks => prevBlocks.map(b => 
                         b.id === dragState.blockId ? { 
                             ...b, 
-                            x: Math.max(0, Math.min(pos.x - dragState.offsetX, GRID_SIZE - width)), 
-                            y: Math.max(0, Math.min(pos.y - dragState.offsetY, GRID_SIZE - height)) 
+                            x: Math.max(0, Math.min(pos.x - dragState.offsetX, gridWidth - width)), 
+                            y: Math.max(0, Math.min(pos.y - dragState.offsetY, gridHeight - height)) 
                         } : b
                     ));
                 }
@@ -435,22 +438,21 @@
                 setDragState(null);
             };
 
-            // Touch event handlers
             const handleTouchStart = (e) => {
-                e.preventDefault(); // Prevent scrolling
+                e.preventDefault();
                 const touch = e.touches[0];
                 handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
             };
 
             const handleTouchMove = (e) => {
-                e.preventDefault(); // Prevent scrolling
-                if (e.touches.length === 1 && dragState) {
+                e.preventDefault();
+                if (dragState) {
                     const touch = e.touches[0];
                     handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
                 }
             };
 
-            const handleTouchEnd = (e) => {
+            const handleTouchEnd = () => {
                 handleMouseUp();
             };
 
@@ -584,7 +586,7 @@
             };
 
             const createCustomDisplay = () => {
-                const { name, types } = customDisplay;
+                const { name, types, width, height } = customDisplay;
                 
                 if (!name || types.length === 0) {
                     setCustomDisplayWarning({
@@ -611,19 +613,48 @@
                     return { ...prev, types: newTypes };
                 });
             };
-
-            const handleWidthChange = (e) => {
-                let value = parseInt(e.target.value) || 1;
-                value = Math.min(value, GRID_SIZE);
-                value = Math.max(value, 1);
+            
+            const handleCustomWidthChange = (e) => {
+                const value = Math.max(1, parseInt(e.target.value) || 1);
                 setCustomDisplay(prev => ({ ...prev, width: value }));
             };
-
-            const handleHeightChange = (e) => {
-                let value = parseInt(e.target.value) || 1;
-                value = Math.min(value, GRID_SIZE);
-                value = Math.max(value, 1);
+            
+            const handleCustomHeightChange = (e) => {
+                const value = Math.max(1, parseInt(e.target.value) || 1);
                 setCustomDisplay(prev => ({ ...prev, height: value }));
+            };
+
+            const handleGridSizeChange = (e, dimension) => {
+                const value = parseInt(e.target.value);
+                if (dimension === 'width') {
+                    setInputGridWidth(value);
+                } else {
+                    setInputGridHeight(value);
+                }
+            };
+            
+            const applyGridSize = () => {
+                const newWidth = parseInt(inputGridWidth);
+                const newHeight = parseInt(inputGridHeight);
+                if (newWidth >= 10 && newWidth <= 200 && newHeight >= 10 && newHeight <= 200) {
+                    if (newWidth < gridWidth || newHeight < gridHeight || blocks.some(b => b.x + b.width > newWidth || b.y + b.height > newHeight)) {
+                        setShowGridSizeModal(true);
+                    } else {
+                        setGridWidth(newWidth);
+                        setGridHeight(newHeight);
+                    }
+                } else {
+                    setNoSpaceWarning({ title: "Invalid Grid Size", message: "Please enter values between 10 and 200." });
+                }
+            };
+
+            const confirmGridSizeChange = () => {
+                const newWidth = parseInt(inputGridWidth);
+                const newHeight = parseInt(inputGridHeight);
+                setGridWidth(newWidth);
+                setGridHeight(newHeight);
+                clearLayout();
+                setShowGridSizeModal(false);
             };
 
             const deleteCustomTypes = () => {
@@ -710,7 +741,7 @@
 
             const exportLayout = () => {
                 const layoutData = {
-                    timestamp: new Date().toISOString(), gridSize: GRID_SIZE, customTypes: typeColors,
+                    timestamp: new Date().toISOString(), gridWidth: gridWidth, gridHeight: gridHeight, customTypes: typeColors,
                     displayConfigs: displayConfigs, displayAvailableTypes: displayAvailableTypes,
                     blocks: blocks.map(block => ({
                         displayType: block.displayType, type: block.type, x: block.x, y: block.y, rotation: block.rotation
@@ -744,6 +775,8 @@
                         if (layoutData.customTypes) setTypeColors(layoutData.customTypes);
                         if (layoutData.displayConfigs) setDisplayConfigs(layoutData.displayConfigs);
                         if (layoutData.displayAvailableTypes) setDisplayAvailableTypes(layoutData.displayAvailableTypes);
+                        if (layoutData.gridWidth) setGridWidth(layoutData.gridWidth);
+                        if (layoutData.gridHeight) setGridHeight(layoutData.gridHeight);
 
                         if (layoutData.blocks && Array.isArray(layoutData.blocks)) {
                             const importedBlocks = layoutData.blocks.map((blockData, index) => ({
@@ -780,14 +813,14 @@
                 const height = block.rotation === 90 ? block.width : block.height;
                 return sum + (width * height);
             }, 0);
-            const totalAvailable = GRID_SIZE * GRID_SIZE;
+            const totalAvailable = gridWidth * gridHeight;
 
             return (
                 <div className="container">
                     <div className="header">
                         <div className="title">Plot Organizer - Arxzez</div>
                         <button className="theme-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
-                            {isDarkMode ? '🌙 ᓚᘏᗢ Dark Mode' : '☀️ Light Mode'}
+                            {isDarkMode ? '🌙 Dark Mode ᓚᘏᗢ' : '☀️ Light Mode'}
                         </button>
                     </div>
 
@@ -797,6 +830,35 @@
                             {/* Controls */}
                             <div className="panel">
                                 <h3 style={{ marginBottom: '1rem' }}>Controls</h3>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px', fontSize: '14px' }}>Grid Size (studs):</label>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <input
+                                                type="number"
+                                                value={inputGridWidth}
+                                                onChange={(e) => handleGridSizeChange(e, 'width')}
+                                                className="form-input"
+                                                min="10"
+                                                max="200"
+                                                placeholder="Width"
+                                            />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <input
+                                                type="number"
+                                                value={inputGridHeight}
+                                                onChange={(e) => handleGridSizeChange(e, 'height')}
+                                                className="form-input"
+                                                min="10"
+                                                max="200"
+                                                placeholder="Height"
+                                            />
+                                        </div>
+                                        <button className="btn btn-blue" onClick={applyGridSize}>Apply</button>
+                                    </div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>Min: 10, Max: 200</div>
+                                </div>
                                 <button className="btn btn-blue" style={{ width: '100%', marginBottom: '8px' }} onClick={clearLayout}>Clear Board</button>
                                 <button className="btn btn-green" style={{ width: '100%', marginBottom: '8px' }} onClick={exportLayout}>Export Layout</button>
                                 <div style={{ position: 'relative', width: '100%', marginBottom: '8px' }}>
@@ -804,7 +866,7 @@
                                     <button className="btn btn-purple" style={{ width: '100%', pointerEvents: 'none' }}>Import Layout</button>
                                 </div>
                                 <button className="btn btn-red" style={{ width: '100%', marginBottom: '8px' }} onClick={() => setShowCustomForms(!showCustomForms)}>
-                                    {showCustomForms ? 'Close Custom Forms' : 'Open Custom Forms'}
+                                    {showCustomForms ? 'Close Custom Displays' : 'Open Custom Displays'}
                                 </button>
                             </div>
 
@@ -859,6 +921,7 @@
                             {/* Stats */}
                             <div className="panel">
                                 <div>Area used: {totalArea}/{totalAvailable} studs ({((totalArea / totalAvailable) * 100).toFixed(1)}%)</div>
+                                <div>Grid: {gridWidth}x{gridHeight}</div>
                             </div>
                         </div>
 
@@ -878,6 +941,7 @@
                                         onTouchStart={handleTouchStart}
                                         onTouchMove={handleTouchMove}
                                         onTouchEnd={handleTouchEnd}
+                                        style={{ width: gridWidth * STUD_SIZE, height: gridHeight * STUD_SIZE }}
                                     >
                                         {blocks.map(block => {
                                             const width = block.rotation === 90 ? block.height : block.width;
@@ -935,7 +999,7 @@
                                     {/* Custom Displays Panel */}
                                     {showCustomForms && (
                                         <div id="customForms" className="panel form-panel custom-form-panel">
-                                            <h3 style={{ marginBottom: '1rem' }}>Create Custom Type</h3>
+                                            <h3 style={{ marginBottom: '1rem' }}>Custom Types</h3>
                                             <div className="input-group" style={{ marginBottom: '1rem' }}>
                                                 <div>
                                                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Typing:</label>
@@ -949,7 +1013,7 @@
                                                     <button className="btn btn-blue" onClick={handleCreateCustomType}>Create</button>
                                                 </div>
                                             </div>
-                                            <h3 style={{ marginBottom: '1rem' }}>Create Custom Display</h3>
+                                            <h3 style={{ marginBottom: '1rem' }}>Custom Displays</h3>
                                             <div className="form-row">
                                                 <div>
                                                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Display Name:</label>
@@ -957,11 +1021,11 @@
                                                 </div>
                                                 <div>
                                                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Width (studs):</label>
-                                                    <input type="number" value={customDisplay.width} onChange={handleWidthChange} className="form-input" min="1" max={GRID_SIZE} />
+                                                    <input type="number" value={customDisplay.width} onChange={handleCustomWidthChange} className="form-input" min="1" max={gridWidth} />
                                                 </div>
                                                 <div>
                                                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Height (studs):</label>
-                                                    <input type="number" value={customDisplay.height} onChange={handleHeightChange} className="form-input" min="1" max={GRID_SIZE} />
+                                                    <input type="number" value={customDisplay.height} onChange={handleCustomHeightChange} className="form-input" min="1" max={gridHeight} />
                                                 </div>
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
@@ -994,7 +1058,7 @@
                         </div>
                     </div>
                     {/* Confirmation Modals */}
-                    {(confirmDelete || confirmCreateType || customDisplayWarning || noSpaceWarning) && (
+                    {(confirmDelete || confirmCreateType || customDisplayWarning || noSpaceWarning || showGridSizeModal) && (
                         <>
                             <div className="modal-overlay"></div>
                             <div className="modal">
@@ -1033,6 +1097,16 @@
                                         <p>{noSpaceWarning.message}</p>
                                         <div className="modal-buttons">
                                             <button className="btn btn-blue" onClick={() => setNoSpaceWarning(null)}>OK</button>
+                                        </div>
+                                    </>
+                                )}
+                                {showGridSizeModal && (
+                                    <>
+                                        <h3 style={{ marginTop: 0 }}>Change Grid Size</h3>
+                                        <p>Changing the grid size will clear the board and all stored displays. Do you want to proceed?</p>
+                                        <div className="modal-buttons">
+                                            <button className="btn btn-red" onClick={confirmGridSizeChange}>Confirm</button>
+                                            <button className="btn btn-blue" onClick={() => setShowGridSizeModal(false)}>Cancel</button>
                                         </div>
                                     </>
                                 )}
