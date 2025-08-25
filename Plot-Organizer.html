@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plot Organizer - 
-Arxzez</title>
+    <title>Plot Organizer - Arxzez</title>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
@@ -363,7 +362,8 @@ Arxzez</title>
                 
                 return bestPosition;
             };
-
+            
+            // Mouse event handlers
             const handleMouseDown = (e) => {
                 const pos = getGridPosition(e.clientX, e.clientY);
                 const block = blocks.find(b => {
@@ -433,6 +433,25 @@ Arxzez</title>
                     }
                 }
                 setDragState(null);
+            };
+
+            // Touch event handlers
+            const handleTouchStart = (e) => {
+                e.preventDefault(); // Prevent scrolling
+                const touch = e.touches[0];
+                handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
+            };
+
+            const handleTouchMove = (e) => {
+                e.preventDefault(); // Prevent scrolling
+                if (e.touches.length === 1 && dragState) {
+                    const touch = e.touches[0];
+                    handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+                }
+            };
+
+            const handleTouchEnd = (e) => {
+                handleMouseUp();
             };
 
             const handleStoredBlockClick = (blockId) => {
@@ -856,6 +875,9 @@ Arxzez</title>
                                         onMouseMove={handleMouseMove}
                                         onMouseUp={handleMouseUp}
                                         onMouseLeave={handleMouseUp}
+                                        onTouchStart={handleTouchStart}
+                                        onTouchMove={handleTouchMove}
+                                        onTouchEnd={handleTouchEnd}
                                     >
                                         {blocks.map(block => {
                                             const width = block.rotation === 90 ? block.height : block.width;
