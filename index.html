@@ -66,7 +66,7 @@
         .btn-green { background: #10b981; } .btn-green:hover { background: #059669; }
         .btn-red { background: #ef4444; } .btn-red:hover { background: #dc2626; }
         .btn-purple { background: #8b5cf6; } .btn-purple:hover { background: #7c3aed; }
-        .spawn-showroom { display: showroom; showroom-template-columns: 1fr 1fr; gap: 8px; }
+        .spawn-showroom { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .spawn-item { position: relative; display: flex; align-items: center; }
         .spawn-btn { 
             flex-grow: 1;
@@ -143,15 +143,15 @@
             background: var(--bg-secondary);
             color: var(--text-primary);
         }
-        .display-row { display: showroom; showroom-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .display-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
         .type-showroom { 
-            display: showroom; 
-            showroom-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
             gap: 8px; 
         }
         .type-btn { padding: 8px; border-radius: 4px; cursor: pointer; text-align: center; font-size: 12px; font-weight: bold; color: white; }
         .storage-display { 
-            display: inline-display; 
+            display: inline-block; 
             margin: 2px; 
             border: 1px solid #1f2937; 
             border-radius: 4px; 
@@ -200,7 +200,7 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transdisplay: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
             background: var(--bg-secondary);
             border: 2px solid var(--border-primary);
             border-radius: 8px;
@@ -234,25 +234,39 @@
         const { useState, useEffect, useRef } = React;
         const ReactDOM = window.ReactDOM;
 
-        const INITIAL_GRID_SIZE = 82;
+        const INITIAL_TIER = 5;
         const STUD_SIZE = 8;
+        const TIER_CONFIGS = {
+            1: { width: 50, height: 82, name: 'Tier 1' },
+            2: { width: 58, height: 82, name: 'Tier 2' },
+            3: { width: 66, height: 82, name: 'Tier 3' },
+            4: { width: 74, height: 82, name: 'Tier 4' },
+            5: { width: 82, height: 82, name: 'Tier 5' },
+            6: { width: 82, height: 82, name: 'Tier 6' },
+            7: { width: 82, height: 82, name: 'Tier 7' },
+            8: { width: 82, height: 88, name: 'Tier 8' },
+            9: { width: 93, height: 88, name: 'Tier 9' }
+        };
         const INITIAL_TYPE_COLORS = {
-            water: '#4A90E2', psychic: '#E91E63', darkness: '#424242', lightning: '#FFC107',
+            water: '#4A90E2', psychic: '#E91E63', darkness: '#424242', electric: '#FFC107',
             grass: '#4CAF50', metal: '#9E9E9E', fighting: '#FF5722', fire: '#FF9800'
         };
         const INITIAL_DISPLAY_CONFIGS = {
-            1: { width: 8, height: 8, name: 'Small Display' },
-            2: { width: 12, height: 12, name: 'Mountain Display' },
+            1: { width: 4, height: 4, name: 'Basic Stand' },
+            2: { width: 8, height: 8, name: 'Small Display' },
             3: { width: 8, height: 8, name: 'Habitat Display' },
-            4: { width: 12, height: 12, name: 'Steampunk Display' },
-            5: { width: 10, height: 10, name: 'Cloud Display' },
-            6: { width: 16, height: 8, name: 'Tree Display' },
-            7: { width: 4, height: 4, name: 'Basic Display' }
+            4: { width: 10, height: 10, name: 'Cloud Display' },
+            5: { width: 16, height: 8, name: 'Tree Display' },
+            6: { width: 12, height: 12, name: 'Mountain Display' },
+            7: { width: 12, height: 12, name: 'Steampunk Display' },
+            8: { width: 14, height: 14, name: 'Ring Display' },
+            9: { width: 10, height: 10, name: 'Volcano Display' }
         };
         const INITIAL_DISPLAY_AVAILABLE_TYPES = {
-            1: ['darkness', 'lightning'], 2: ['water', 'psychic', 'fighting'], 3: ['grass', 'water'],
-            4: ['metal', 'fighting', 'psychic'], 5: ['darkness', 'lightning', 'water'], 
-            6: ['darkness', 'grass', 'psychic'], 7: ['fire', 'grass', 'water']
+            1: ['fire', 'grass', 'water'], 2: ['darkness', 'electric'], 3: ['grass', 'water'],
+            4: ['darkness', 'electric', 'water'], 5: ['darkness', 'grass', 'psychic'], 
+            6: ['water', 'psychic', 'fighting'], 7: ['metal', 'fighting', 'psychic'],
+            8: ['water','fighting','electric'], 9: ['water','fire','electric']
         };
 
         const App = () => {
@@ -272,15 +286,14 @@
             const [confirmCreateType, setConfirmCreateType] = useState(null);
             const [customDisplayWarning, setCustomDisplayWarning] = useState(null);
             const [noSpaceWarning, setNoSpaceWarning] = useState(null);
-            const [showroomWidth, setShowroomWidth] = useState(INITIAL_GRID_SIZE);
-            const [showroomHeight, setShowroomHeight] = useState(INITIAL_GRID_SIZE);
-            const [inputShowroomWidth, setInputShowroomWidth] = useState(INITIAL_GRID_SIZE);
-            const [inputShowroomHeight, setInputShowroomHeight] = useState(INITIAL_GRID_SIZE);
+            const [currentTier, setCurrentTier] = useState(INITIAL_TIER);
             const [showShowroomSizeModal, setShowShowroomSizeModal] = useState(false);
-
 
             const showroomRef = useRef(null);
             const startDragPos = useRef(null);
+
+            const showroomWidth = TIER_CONFIGS[currentTier].width;
+            const showroomHeight = TIER_CONFIGS[currentTier].height;
 
             useEffect(() => {
                 const savedTheme = localStorage.getItem('theme');
@@ -624,35 +637,15 @@
                 setCustomDisplay(prev => ({ ...prev, height: value }));
             };
 
-            const handleShowroomSizeChange = (e, dimension) => {
-                const value = parseInt(e.target.value);
-                if (dimension === 'width') {
-                    setInputShowroomWidth(value);
-                } else {
-                    setInputShowroomHeight(value);
+            const handleTierChange = (e) => {
+                const newTier = parseInt(e.target.value);
+                if (newTier !== currentTier) {
+                    setShowShowroomSizeModal(true);
+                    setCurrentTier(newTier);
                 }
             };
             
-            const applyShowroomSize = () => {
-                const newWidth = parseInt(inputShowroomWidth);
-                const newHeight = parseInt(inputShowroomHeight);
-                if (newWidth >= 10 && newWidth <= 200 && newHeight >= 10 && newHeight <= 200) {
-                    if (newWidth < showroomWidth || newHeight < showroomHeight || displays.some(b => b.x + b.width > newWidth || b.y + b.height > newHeight)) {
-                        setShowShowroomSizeModal(true);
-                    } else {
-                        setShowroomWidth(newWidth);
-                        setShowroomHeight(newHeight);
-                    }
-                } else {
-                    setNoSpaceWarning({ title: "Invalid Showroom Size", message: "Please enter a number between 10 and 200." });
-                }
-            };
-
             const confirmShowroomSizeChange = () => {
-                const newWidth = parseInt(inputShowroomWidth);
-                const newHeight = parseInt(inputShowroomHeight);
-                setShowroomWidth(newWidth);
-                setShowroomHeight(newHeight);
                 clearLayout();
                 setShowShowroomSizeModal(false);
             };
@@ -741,7 +734,7 @@
 
             const exportLayout = () => {
                 const layoutData = {
-                    timestamp: new Date().toISOString(), showroomWidth: showroomWidth, showroomHeight: showroomHeight, customTypes: typeColors,
+                    timestamp: new Date().toISOString(), currentTier: currentTier, customTypes: typeColors,
                     displayConfigs: displayConfigs, displayAvailableTypes: displayAvailableTypes,
                     displays: displays.map(display => ({
                         displayType: display.displayType, type: display.type, x: display.x, y: display.y, rotation: display.rotation
@@ -775,8 +768,7 @@
                         if (layoutData.customTypes) setTypeColors(layoutData.customTypes);
                         if (layoutData.displayConfigs) setDisplayConfigs(layoutData.displayConfigs);
                         if (layoutData.displayAvailableTypes) setDisplayAvailableTypes(layoutData.displayAvailableTypes);
-                        if (layoutData.showroomWidth) setShowroomWidth(layoutData.showroomWidth);
-                        if (layoutData.showroomHeight) setShowroomHeight(layoutData.showroomHeight);
+                        if (layoutData.currentTier) setCurrentTier(layoutData.currentTier);
 
                         if (layoutData.displays && Array.isArray(layoutData.displays)) {
                             const importeddisplays = layoutData.displays.map((displayData, index) => ({
@@ -820,7 +812,7 @@
                     <div className="header">
                         <div className="title">Showroom Organizer - Arxzez</div>
                         <button className="theme-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
-                            {isDarkMode ? '🌙 Dark Mode ᓚᘏᗢ' : '☀️ Light Mode'}
+                            {isDarkMode ? '🌙 Dark Mode á"šá˜á—¢' : '☀️ Light Mode'}
                         </button>
                     </div>
 
@@ -829,33 +821,21 @@
                             <div className="panel">
                                 <h3 style={{ marginBottom: '1rem' }}>Controls</h3>
                                 <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px', fontSize: '14px' }}>Showroom Size (studs):</label>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <div style={{ flex: 1 }}>
-                                            <input
-                                                type="number"
-                                                value={inputShowroomWidth}
-                                                onChange={(e) => handleShowroomSizeChange(e, 'width')}
-                                                className="display-input"
-                                                min="10"
-                                                max="200"
-                                                placeholder="Width"
-                                            />
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                            <input
-                                                type="number"
-                                                value={inputShowroomHeight}
-                                                onChange={(e) => handleShowroomSizeChange(e, 'height')}
-                                                className="display-input"
-                                                min="10"
-                                                max="200"
-                                                placeholder="Height"
-                                            />
-                                        </div>
-                                        <button className="btn btn-blue" onClick={applyShowroomSize}>Apply</button>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px', fontSize: '14px' }}>Showroom Tier:</label>
+                                    <select
+                                        value={currentTier}
+                                        onChange={handleTierChange}
+                                        className="display-input"
+                                    >
+                                        {Object.entries(TIER_CONFIGS).map(([tier, config]) => (
+                                            <option key={tier} value={tier}>
+                                                {config.name} ({config.width}x{config.height})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                                        Current: {showroomWidth}x{showroomHeight} studs
                                     </div>
-                                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>Min: 10, Max: 200</div>
                                 </div>
                                 <button className="btn btn-blue" style={{ width: '100%', marginBottom: '8px' }} onClick={clearLayout}>Clear Showroom</button>
                                 <button className="btn btn-green" style={{ width: '100%', marginBottom: '8px' }} onClick={exportLayout}>Export Layout</button>
@@ -881,7 +861,7 @@
                                                 <br/>
                                                 ({config.width}x{config.height})
                                             </button>
-                                            {parseInt(displayType) > 7 && (
+                                            {parseInt(displayType) > 9 && (
                                                 <button
                                                     className="delete-btn"
                                                     onClick={() => handleDeleteCustomDisplayClick(displayType)}
@@ -896,7 +876,7 @@
                             
                             <div className="panel">
                                 <h3 style={{ marginBottom: '1rem' }}>Storage</h3>
-                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Click a display to take it outt</div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Click a display to take it out</div>
                                 <div className="storage-area">
                                     {storeddisplays.map(display => {
                                         const config = displayConfigs[display.displayType] || { name: 'Custom' };
@@ -916,7 +896,7 @@
 
                             <div className="panel">
                                 <div>Area used: {totalArea}/{totalAvailable} studs ({((totalArea / totalAvailable) * 100).toFixed(1)}%)</div>
-                                <div>showroom: {showroomWidth}x{showroomHeight}</div>
+                                <div>Showroom: {showroomWidth}x{showroomHeight}</div>
                             </div>
                         </div>
 
@@ -952,7 +932,7 @@
                                                 >
                                                     <div className="display-text">
                                                         <div>{displayConfigs[display.displayType]?.name?.split(' ')[0]}</div>
-                                                        <div style={{ textTransdisplay: 'capitalize' }}>{display.type}</div>
+                                                        <div style={{ textTransform: 'capitalize' }}>{display.type}</div>
                                                         <div>{width}x{height}</div>
                                                         {display.rotation === 90 && <div>↻</div>}
                                                     </div>
@@ -991,11 +971,11 @@
                                             <h3 style={{ marginBottom: '1rem' }}>Custom Types</h3>
                                             <div className="input-group" style={{ marginBottom: '1rem' }}>
                                                 <div>
-                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Type:</label>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Type:</label>
                                                     <input type="text" value={customType.name} onChange={(e) => setCustomType(prev => ({ ...prev, name: e.target.value }))} className="display-input" maxLength="12" />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Color:</label>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Color:</label>
                                                     <input type="color" value={customType.color} onChange={(e) => setCustomType(prev => ({ ...prev, color: e.target.value }))} className="color-input" />
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'flex-end' }}>
@@ -1005,20 +985,20 @@
                                             <h3 style={{ marginBottom: '1rem' }}>Custom Displays</h3>
                                             <div className="display-row">
                                                 <div>
-                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Display Name:</label>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Display Name:</label>
                                                     <input type="text" value={customDisplay.name} onChange={(e) => setCustomDisplay(prev => ({ ...prev, name: e.target.value }))} className="display-input" maxLength="25" />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Width (studs):</label>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Width (studs):</label>
                                                     <input type="number" value={customDisplay.width} onChange={handleCustomWidthChange} className="display-input" min="1" max={showroomWidth} />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '4px' }}>Height (studs):</label>
+                                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>Height (studs):</label>
                                                     <input type="number" value={customDisplay.height} onChange={handleCustomHeightChange} className="display-input" min="1" max={showroomHeight} />
                                                 </div>
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
-                                                <label style={{ display: 'display', fontWeight: 'bold', marginBottom: '8px' }}>Available Types (click to select):</label>
+                                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>Available Types (click to select):</label>
                                                 <div className="type-showroom">
                                                     {Object.keys(typeColors).map(type => (
                                                         <div 
@@ -1090,8 +1070,8 @@
                                 )}
                                 {showShowroomSizeModal && (
                                     <>
-                                        <h3 style={{ marginTop: 0 }}>Change showroom Size</h3>
-                                        <p>Changing the showroom size will clear the board and all stored displays. Are you sure?</p>
+                                        <h3 style={{ marginTop: 0 }}>Change Showroom Tier</h3>
+                                        <p>Changing the showroom tier will clear the board and all stored displays. Are you sure?</p>
                                         <div className="modal-buttons">
                                             <button className="btn btn-red" onClick={confirmShowroomSizeChange}>Confirm</button>
                                             <button className="btn btn-blue" onClick={() => setShowShowroomSizeModal(false)}>Cancel</button>
@@ -1109,5 +1089,3 @@
     </script>
 </body>
 </html>
-
-
