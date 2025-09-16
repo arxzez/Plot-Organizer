@@ -237,30 +237,30 @@
         const INITIAL_TIER = 5;
         const STUD_SIZE = 8;
         const TIER_CONFIGS = {
-            1: { width: 50, height: 82, name: 'Tier 1' },
-            2: { width: 58, height: 82, name: 'Tier 2' },
-            3: { width: 66, height: 82, name: 'Tier 3' },
-            4: { width: 74, height: 82, name: 'Tier 4' },
-            5: { width: 82, height: 82, name: 'Tier 5' },
-            6: { width: 82, height: 82, name: 'Tier 6' },
-            7: { width: 82, height: 82, name: 'Tier 7' },
-            8: { width: 88, height: 82, name: 'Tier 8' },
-            9: { width: 88, height: 93, name: 'Tier 9' }
+            1: { height: 50, width: 82, name: 'Tier 1' },
+            2: { height: 58, width: 82, name: 'Tier 2' },
+            3: { height: 66, width: 82, name: 'Tier 3' },
+            4: { height: 74, width: 82, name: 'Tier 4' },
+            5: { height: 82, width: 82, name: 'Tier 5' },
+            6: { height: 82, width: 82, name: 'Tier 6' },
+            7: { height: 82, width: 82, name: 'Tier 7' },
+            8: { height: 88, width: 85, name: 'Tier 8' },
+            9: { height: 88, width: 93, name: 'Tier 9' }
         };
         const INITIAL_TYPE_COLORS = {
             water: '#4A90E2', psychic: '#E91E63', darkness: '#424242', lightning: '#FFC107',
             grass: '#4CAF50', metal: '#9E9E9E', fighting: '#FF5722', fire: '#FF9800'
         };
         const INITIAL_DISPLAY_CONFIGS = {
-            1: { width: 4, height: 4, name: 'Basic Stand' },
-            2: { width: 8, height: 8, name: 'Small Display' },
-            3: { width: 8, height: 8, name: 'Habitat Display' },
-            4: { width: 10, height: 10, name: 'Cloud Display' },
-            5: { width: 16, height: 8, name: 'Tree Display' },
-            6: { width: 12, height: 12, name: 'Mountain Display' },
-            7: { width: 12, height: 12, name: 'Steampunk Display' },
-            8: { width: 14, height: 14, name: 'Ring Display' },
-            9: { width: 10, height: 10, name: 'Volcano Display' }
+            1: { height: 4, width: 4, name: 'Basic Stand' },
+            2: { height: 8, width: 8, name: 'Small Display' },
+            3: { height: 8, width: 8, name: 'Habitat Display' },
+            4: { height: 10, width: 10, name: 'Cloud Display' },
+            5: { height: 16, width: 8, name: 'Tree Display' },
+            6: { height: 12, width: 12, name: 'Mountain Display' },
+            7: { height: 12, width: 12, name: 'Steampunk Display' },
+            8: { height: 14, width: 14, name: 'Ring Display' },
+            9: { height: 12, width: 12, name: 'Volcano Display' }
         };
         const INITIAL_DISPLAY_AVAILABLE_TYPES = {
             1: ['fire', 'grass', 'water'], 2: ['darkness', 'lighting'], 3: ['grass', 'water'],
@@ -277,7 +277,7 @@
             const [selecteddisplayId, setSelecteddisplayId] = useState(null);
             const [isDarkMode, setIsDarkMode] = useState(false);
             const [showCustomDisplays, setShowCustomDisplays] = useState(false);
-            const [customDisplay, setCustomDisplay] = useState({ name: '', width: 8, height: 8, types: [] });
+            const [customDisplay, setCustomDisplay] = useState({ name: '', height: 8, width: 8, types: [] });
             const [customType, setCustomType] = useState({ name: '', color: '#FF6B6B' });
             const [typeColors, setTypeColors] = useState(INITIAL_TYPE_COLORS);
             const [displayConfigs, setDisplayConfigs] = useState(INITIAL_DISPLAY_CONFIGS);
@@ -1089,7 +1089,3 @@
     </script>
 </body>
 </html>
-
-
-
-
